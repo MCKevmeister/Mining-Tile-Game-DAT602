@@ -2,9 +2,9 @@ DROP DATABASE IF EXISTS dbTileGame;
 CREATE DATABASE dbTileGame;
 USE dbTileGame;
 
---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Procdure to create the all of the tables in the database
---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DELIMITER //
 CREATE PROCEDURE makeTileGameDB()
@@ -75,15 +75,15 @@ CREATE PROCEDURE makeTileGameDB()
             `yPosition` TINYINT,
             `characterScoreTotal` INTEGER NOT NULL DEFAULT 0,
             `isActive` BOOLEAN DEFAULT FALSE,
-            FOREIGN KEY (username) REFERENCES tblUser (username) ON UPDATE CASCADE ON DELETE CASCADE
+            FOREIGN KEY (username) REFERENCES tblUser (username) ON DELETE CASCADE ON UPDATE CASCADE
             );
 
         CREATE TABLE tblCharacterSkill(
 			`characterName` VARCHAR(32) NOT NULL,
             `skillName`  VARCHAR(20) NOT NULL,
-            PRIMARY KEY (characterName, skillName),
-            FOREIGN KEY (characterName) REFERENCES tblCharacter (characterName) ON UPDATE CASCADE,
-            FOREIGN KEY (skillName) REFERENCES tblSkill (skillName) ON UPDATE CASCADE
+            FOREIGN KEY (characterName) REFERENCES tblCharacter (characterName) ON DELETE CASCADE ON UPDATE CASCADE,
+            FOREIGN KEY (skillName) REFERENCES tblSkill (skillName) ON UPDATE CASCADE,
+            PRIMARY KEY (characterName, skillName)
 			);
 
         CREATE TABLE tblChat(
@@ -91,7 +91,7 @@ CREATE PROCEDURE makeTileGameDB()
             `sender` VARCHAR(32) NOT NULL,
             `message` VARCHAR(255) NOT NULL,
             `timesent` DATETIME,
-            FOREIGN KEY (sender) REFERENCES tblCharacter (characterName) ON UPDATE CASCADE
+            FOREIGN KEY (sender) REFERENCES tblCharacter (characterName) ON DELETE CASCADE ON UPDATE CASCADE
             );
 
         CREATE TABLE tblCharacterItem(
@@ -99,7 +99,7 @@ CREATE PROCEDURE makeTileGameDB()
             `itemName` VARCHAR(32) NOT NULL,
             `quantity` TINYINT, 
             PRIMARY KEY (characterName, itemName),
-            FOREIGN KEY (characterName) REFERENCES tblCharacter (characterName) ON UPDATE CASCADE,
+            FOREIGN KEY (characterName) REFERENCES tblCharacter (characterName) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY (itemName) REFERENCES tblItem (itemName) ON UPDATE CASCADE
 			);
 
@@ -108,9 +108,9 @@ CREATE PROCEDURE makeTileGameDB()
             `mapID` INTEGER NOT NULL,
             `score` INTEGER DEFAULT 0,
             PRIMARY KEY (characterName, mapID),
-            FOREIGN KEY (characterName) REFERENCES tblCharacter (characterName) ON UPDATE CASCADE,
-            FOREIGN KEY (mapID) REFERENCES tblMap (mapID) ON UPDATE DELETE
-             );
+            FOREIGN KEY (characterName) REFERENCES tblCharacter (characterName) ON DELETE CASCADE ON UPDATE CASCADE,
+            FOREIGN KEY (mapID) REFERENCES tblMap (mapID)
+            );
 
         CREATE TABLE tblMineTile(
 			`mineName` VARCHAR(20) NOT NULL,
@@ -133,9 +133,9 @@ DELIMITER ;
 CALL makeTileGameDB();
 
 
---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- INSERT Statements
---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO tblUser(username, email, userPassword, loginAttempts, userscore, isLocked, isAdmin, isOnline)
 Values 
@@ -287,9 +287,9 @@ Values
 ('StepehnCharacter',126),
 ('MichaelCharacter',126);
 
---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- UPDATE Statements
---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -- UPDATE tblUser
 -- SET username = 'Kram'
@@ -347,9 +347,9 @@ Values
 -- SET tileID = 15
 -- WHERE tileID = 14;
 
---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- SELECT Statements
---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SELECT * FROM tblUser;
 
 SELECT * FROM tblSkill;
@@ -411,7 +411,7 @@ DELETE FROM tblSkill;
 DELETE FROM tblUser;
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Register a User
+-- Register a User WORKING
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DROP PROCEDURE IF EXISTS registerUser;
 
@@ -421,7 +421,7 @@ BEGIN
 START TRANSACTION;
     IF EXISTS (SELECT * FROM tblUser WHERE username = pUserName OR email = pEmail) THEN
         BEGIN
-            SELECT 'Username or Email already exists' AS MESSAGE;
+            SELECT "Username or Email already exists" AS MESSAGE;
             -- SIGNAL SQLSTATE '45000'
             -- SET MESSAGE_TEXT = 'Username or Email already exists';
         END;
@@ -430,19 +430,19 @@ START TRANSACTION;
             INSERT INTO tblUser(username , email, userPassword) VALUES (pUserName, pEmail, pUserPassword);
             -- SIGNAL SQLSTATE '77777'
 			-- SET MESSAGE_TEXT = 'User has been registered';
-            SELECT 'User has been registered' AS MESSAGE;
+            SELECT "User has been registered" AS MESSAGE;
         END;
     END IF;
 COMMIT;
 END//
 DELIMITER ;
 
-CALL registerUser("foobaz", "foobaz", "foobaz");
+CALL registerUser("foobaaz", "foobaaz", "foobaaz");
 
 SELECT * FROM tbluser;
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Login with a user
+-- Login with a user WORKING
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DROP PROCEDURE IF EXISTS userLogin;
 
@@ -497,7 +497,7 @@ DELIMITER ;
 call userLogin("foo", "foo");
 SELECT * FROM tblUser;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Edit User
+-- Edit User WORKING
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DELIMITER //
@@ -512,8 +512,12 @@ COMMIT;
 END//
 DELIMITER ;
 
+call editUser("foo", "fooer", "fooer", "fooer");
+
+select * from tblUser;
+
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
---Delete User
+--Delete User WORKING
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DELIMITER //
@@ -523,12 +527,15 @@ BEGIN
 START TRANSACTION;
 	DELETE FROM tblUser
 	WHERE username = pUserName;
+    SELECT CONCAT( pUserName + " has been deleted")
 COMMIT;
 END//
 DELIMITER ;
 
+call deleteUser ("foobaz");
+
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
---User Creates Character (inlcuding character skills created)
+--User Creates Character (inlcuding character skills created) WORKING
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DELIMITER //
@@ -545,6 +552,13 @@ BEGIN
 END//
 DELIMITER ;
 
+call createCharacter("bar", "bar bar baram", "Miner", "Fisher", "Gatherer", "Woodcutter");
+
+SELECT * FROM tblCharacter WHERE characterName = "bar bar baram";
+
+SELECT * FROM tblCharacterSkill
+WHERE characterName = "bar bar baram";
+
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Deletes Character
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -559,6 +573,10 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
+call deleteCharacter("bar bar baram");
+
+select * from tblCharacter where characterName = "bar bar baram";
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Select Character to play game
@@ -721,8 +739,6 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS adminKillGame//
 CREATE PROCEDURE adminKillGame(pUserName VARCHAR(32)) 
 BEGIN
-    Start Transaction;
-        DELETE FROM `tbl` ${WHERE condition}
             -- SIGNAL SQLSTATE '45000'
 			--     SET MESSAGE_TEXT = 'Username or Email already exists';
 END//
@@ -733,7 +749,7 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminAddUser//
-CREATE PROCEDURE adminAddUser(pUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BOOLEAN)) 
+CREATE PROCEDURE adminAddUser(pUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BOOLEAN)
 BEGIN
 START TRANSACTION;
     IF EXISTS(
@@ -747,7 +763,7 @@ START TRANSACTION;
     ELSE
         BEGIN
             INSERT INTO tblUser(username , email, userPassword, isAdmin)
-            VALUES (pUserName, pEmail, pUserPassword, pIsAdmin)
+            VALUES (pUserName, pEmail, pUserPassword, pIsAdmin);
 
             SELECT 'User has been registered' AS MESSAGE;
         END;
@@ -789,7 +805,7 @@ DELIMITER ;
 -- Delete a user
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminDeleteUser//
-CREATE PROCEDURE adminDeleteUser(pUserName VARCHAR(32)) 
+CREATE PROCEDURE adminDeleteUser(pUserName VARCHAR(32))
 START TRANSACTION;
 	DELETE FROM tblUser
 	WHERE username = pUserName;
