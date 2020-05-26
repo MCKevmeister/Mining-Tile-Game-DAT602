@@ -5956,11 +5956,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Mark\\source\\repos\\mining tile game\\mining tile game\\mining tile game.csproj",
+      "projectUniqueName": "C:\\Users\\Mark\\Documents\\GitHub\\Mining-Tile-Game-DAT602\\mining tile game\\mining tile game\\mining tile game.csproj",
       "projectName": "mining tile game",
-      "projectPath": "C:\\Users\\Mark\\source\\repos\\mining tile game\\mining tile game\\mining tile game.csproj",
+      "projectPath": "C:\\Users\\Mark\\Documents\\GitHub\\Mining-Tile-Game-DAT602\\mining tile game\\mining tile game\\mining tile game.csproj",
       "packagesPath": "C:\\Users\\Mark\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Mark\\source\\repos\\mining tile game\\mining tile game\\obj\\",
+      "outputPath": "C:\\Users\\Mark\\Documents\\GitHub\\Mining-Tile-Game-DAT602\\mining tile game\\mining tile game\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Mark\\AppData\\Roaming\\NuGet\\NuGet.Config",
