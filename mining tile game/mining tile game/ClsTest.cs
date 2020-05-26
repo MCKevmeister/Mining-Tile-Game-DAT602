@@ -30,13 +30,13 @@ namespace mining_tile_game
                 return "\nError Connecting to server";
             }
         }
-        public void CreateMySqlCommand(string myExecuteQuery, MySqlConnection myConnection)
-        {
-            MySqlCommand myCommand = new MySqlCommand(myExecuteQuery, myConnection);
-            myCommand.Connection.Open();
-            myCommand.ExecuteNonQuery();
-            myConnection.Close();
-        }
+        // public void CreateMySqlCommand(string myExecuteQuery, MySqlConnection myConnection)
+        // {
+        //     MySqlCommand myCommand = new MySqlCommand(myExecuteQuery, myConnection);
+        //     myCommand.Connection.Open();
+        //     myCommand.ExecuteNonQuery();
+        //     myConnection.Close();
+        // }
         public static DataSet userLogin(string pUsername, string pPassword)
         {
             List<MySqlParameter> ParamList = new List<MySqlParameter>();
@@ -127,6 +127,21 @@ namespace mining_tile_game
             var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminUnlockUser(@Username)", ParamList.ToArray());
 
             return aDataSet;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
         }
     }
 }
