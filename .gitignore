@@ -4,3 +4,8 @@ mining tile game/mining tile game/obj/Debug/netcoreapp3.1/mining tile game.asset
 *.cache
 *.cache
 .vscode/launch.json
+*.cache
+*.ide-shm
+*.ide-wal
+*.cache
+*.json
