@@ -8,10 +8,10 @@ namespace mining_tile_game
 {
     class ClsTest
     {
-        private static readonly String connection = "Server=localhost;Port=3306;Database=dbTileGame;Uid =root;password=W7oUmiLaiTrznc;"; 
+        private static readonly String connection = "Server=localhost;Port=3306;Database=dbTileGame;Uid =root;password=W7oUmiLaiTrznc;";
         private static readonly MySqlConnection mySqlConnection = new MySqlConnection(connection);
         private static object userName;
-   
+
         public static object getUserName()
         {
             return userName;
@@ -117,7 +117,7 @@ namespace mining_tile_game
             var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getLockedUsers()");
             return aDataSet;
         }
-        public static DataSet unlockUser( string pUsername)
+        public static DataSet unlockUser(string pUsername)
         {
             List<MySqlParameter> ParamList = new List<MySqlParameter>();
             var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
@@ -127,21 +127,6 @@ namespace mining_tile_game
             var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminUnlockUser(@Username)", ParamList.ToArray());
 
             return aDataSet;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
         }
     }
 }
