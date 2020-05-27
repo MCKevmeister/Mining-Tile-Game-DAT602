@@ -19,7 +19,7 @@ namespace mining_tile_game
             var response = Console.ReadLine();
             switch (response)
             {
-                case "1":
+                case "1": // test connection
                     string testConnection = ClsTest.testConnection();
                     Console.WriteLine(testConnection + "\n");
                     menu();
@@ -65,76 +65,81 @@ namespace mining_tile_game
                 default:
                     menu();
                     break;
-
-                //case "5": //Delete User
-                //    Console.WriteLine("Delete User \nPlease enter the user to delete");
-                //    string deleteuser_username = Console.ReadLine();
-                //    DataSet DeleteUser = ClsTest.deleteUser(deleteuser_username);
-                //    foreach (DataRow aRow in DeleteUser.Tables[0].Rows)
-                //    {
-                //        Console.WriteLine(aRow["Message"]);
-                //    }
-                //    userMenu();
-                //    menu();
-                //    break;
-
-                //case "6": //User Locked Out Check
-                //    Console.WriteLine("User Lock out check\nPlease enter the user to check if they are locked out");
-                //    string userlockedcheck_username = Console.ReadLine();
-                //    DataSet UserLockedOut = ClsTest.deleteUser(userlockedcheck_username);
-                //    foreach (DataRow aRow in UserLockedOut.Tables[0].Rows)
-                //    {
-                //        Console.WriteLine(aRow["Message"]);
-                //    }
-                //    menu(); 
-                //    break;
             }
         }
         private static void userMenu()
         {
-            string currentUser = ClsTest.getUserName().ToString();
-            Console.WriteLine("The current User is" + currentUser);
+            //string currentUser = ClsTest.getUserName().ToString();
+            Console.WriteLine("The current User is" + ClsTest.getUserName().ToString());
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~User Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-                "n 1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Main Menu\n7) Exit Program");//6) Create Game\n7) Character Chats\n8) Main Menu\n 9)Admin Menu\n10) Exit Program");
+                "n 1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Main Menu\n7) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
                 case "1": //Edit User
-                    //TODO  
+                    Console.WriteLine("Please enter a new username");
+                    var editUserName = Console.ReadLine();
+                    Console.WriteLine("Please enter a new password");
+                    var editUserPassword = Console.ReadLine();
+                    Console.WriteLine("Please enter a new email");
+                    var editUserEmail = Console.ReadLine();
+                    DataSet editUser = ClsTest.editUser(editUserName, editUserPassword, editUserEmail);
+                    foreach (DataRow aRow in editUser.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
                     userMenu();
                     break;
 
-                //case "2": //Delete User
-                //    Console.WriteLine("Are you sure you want to delete this user?\n1) Yes\n2) No");
-                //    string deleteUserResponse = Console.ReadLine();
-                //    if(Equals(deleteUserResponse, 1))
-                //    {
-                //        DataSet DeleteUser = ClsTest.deleteUser();
-                //        foreach (DataRow aRow in DeleteUser.Tables[0].Rows)
-                //        {
-                //            Console.WriteLine(aRow["Message"]);
-                //        }
-                //    }
-                //    userMenu();
-                //    break;
+                case "2": //Delete User
+                    Console.WriteLine("Are you sure you want to delete this user?\n1) Yes\n2) No");
+                    string deleteUserResponse = Console.ReadLine();
+                    if (Equals(deleteUserResponse, 1))
+                    {
+                        DataSet deleteUser = ClsTest.deleteUser();
+                        foreach (DataRow aRow in deleteUser.Tables[0].Rows)
+                        {
+                            Console.WriteLine(aRow["Message"]);
+                        }
+                    }
+                    userMenu();
+                    break;
 
                 case "3": //User Creates Character
                     Console.WriteLine("What is the name of the Character?");
                     string characterName = Console.ReadLine();
-                    Console.WriteLine("Please choose 4 skills");
-                    
-
-                    string deleteUserResponse = Console.ReadLine();
+                    Console.WriteLine("Please choose 4 skills by typing in the numbe\n1) Miner\n2) Gatherer\n3) Fisher\n4) Woodcutter\n5)Archer\n6)Smith");
+                    int skill1 = Console.Read();
+                    int skill2 = Console.Read();
+                    int skill3 = Console.Read();
+                    int skill4 = Console.Read();
+                    DataSet createCharacter = ClsTest.createCharacter(characterName, skill1, skill2, skill3, skill4);
+                    foreach (DataRow aRow in createCharacter.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
                     userMenu();
                     break;
 
                 case "4": //User Deletes Character
-                          //TODO
+                    Console.WriteLine("These are you current Characters");
+                    ClsTest.getAllUserCharacters();
+                    Console.WriteLine("What is the name of the Character you want to delete?");
+                    string characterToDelete = Console.ReadLine();
+                    DataSet deleteCharacter = ClsTest.deleteCharacter(characterName);
+                    foreach (DataRow aRow in deleteCharacter.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
                     userMenu();
                     break;
 
                 case "5": //Select Character to play game
-                    characterMenu();
+                    Console.WriteLine("These are you current Characters");
+                    ClsTest.getAllUserCharacters();
+                    Console.WriteLine("What character do you want to play with?");
+                    // check if character exits? TODO
+                   characterMenu();
                     break;
 
                 case "6": //Main Menu
@@ -152,7 +157,9 @@ namespace mining_tile_game
         }
         private static void characterMenu()
         {
-
+            Console.WriteLine("The current Character is" + ClsTest.getCharacterName().ToString());
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Character Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
+            "1) Create Game\n2) Character Chats\n3)User Menu\n4)  Return to Game in Progress\n5) Main Menu\n6) Exit Program");
         }
         private static void gameMenu()
         {
@@ -167,31 +174,56 @@ namespace mining_tile_game
             var response = Console.ReadLine();
             switch (response)
             {
-                case "1":
+                case "1": //Admin Kills Running Game
+                    //Get list of running games
+                    //Print
+                    //select game to "kill"
                     //TODO  
                     adminMenu();
                     break;
 
-                case "2":
+                case "2": //Admin adds a user
+                    Console.WriteLine("~~ Admin ~~ User registration\nPlease enter a Username");
+                    string registerUserName = Console.ReadLine();
+                    Console.WriteLine("Please enter a Email");
+                    string registerEmail = Console.ReadLine();
+                    Console.WriteLine("Please enter a Password");
+                    string registerPassword = Console.ReadLine();
+                    Console.WriteLine("Is this user an Admin?\n1)Yes\n2)No");
+                    var adminResponse = Console.ReadLine();
+                    bool registerAdmin;
+                    if (adminResponse = 1)
+                    {
+                        registerAdmin = true;
+                    }
+                    else
+                    {
+                        registerAdmin = false;
+                    }
+
+                    DataSet RegisterUser = ClsTest.adminRegisterUser(registerUserName, registerEmail, registerPassword, registerAdmin);
+                    foreach (DataRow aRow in RegisterUser.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
+                    adminMenu();
+                    break;
+
+                case "3": //Admin edits user
                     //TODO
                     adminMenu();
                     break;
 
-                case "3":
-                    //TODO
-                    adminMenu();
-                    break;
-
-                case "4":
+                case "4": //Admin deletes user
                     Console.WriteLine("~~~~List of All Users~~~~");
                     DataSet allUsers = ClsTest.getAllUsers();
                     foreach (DataRow aRow in allUsers.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["username"]);
                     }
-                    Console.WriteLine("Which user do you want to delete?");
+                    Console.WriteLine("Please type the name of the user you want to delete?");
                     var userToDelete = Console.ReadLine();
-                    DataSet deleteUser = ClsTest.deleteUser(userToDelete);
+                    DataSet deleteUser = ClsTest.adminDeleteUser(userToDelete);
                     foreach (DataRow aRow in deleteUser.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
@@ -199,14 +231,14 @@ namespace mining_tile_game
                     adminMenu();
                     break;
                         
-                case "5":
+                case "5": //Admin unlocks locked user
                     Console.WriteLine("~~~~List of All Locked Users~~~~");
                     DataSet lockedUsers = ClsTest.getLockedUsers();
                     foreach (DataRow aRow in lockedUsers.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["username"]);
                     }
-                    Console.WriteLine("Which user do you want to unlock?");
+                    Console.WriteLine("Please type the name of the user you want to unlock?");
                     var userToUnlock = Console.ReadLine();
                     DataSet unlockUser = ClsTest.unlockUser(userToUnlock);
                     foreach (DataRow aRow in unlockUser.Tables[0].Rows)

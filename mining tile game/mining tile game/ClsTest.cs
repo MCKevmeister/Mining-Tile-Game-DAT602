@@ -30,34 +30,6 @@ namespace mining_tile_game
                 return "\nError Connecting to server";
             }
         }
-        // public void CreateMySqlCommand(string myExecuteQuery, MySqlConnection myConnection)
-        // {
-        //     MySqlCommand myCommand = new MySqlCommand(myExecuteQuery, myConnection);
-        //     myCommand.Connection.Open();
-        //     myCommand.ExecuteNonQuery();
-        //     myConnection.Close();
-        // }
-        public static DataSet userLogin(string pUsername, string pPassword)
-        {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            var paramUserPassword = new MySqlParameter("@UserPassword", MySqlDbType.VarChar, 64);
-
-            paramUsername.Value = pUsername;
-            paramUserPassword.Value = pPassword;
-
-            ParamList.Add(paramUsername);
-            ParamList.Add(paramUserPassword);
-
-            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "userLogin(@Username,@UserPassword)", ParamList.ToArray());
-            userName = pUsername;
-
-            foreach (DataRow aRow in aDataSet.Tables[0].Rows)
-            {
-                userName = (aRow["userName"]);
-            }
-            return aDataSet;
-        }
         public static DataSet registerUser(string pUsername, string pEmail, string pPassword)
         {
             List<MySqlParameter> ParamList = new List<MySqlParameter>();
@@ -85,28 +57,42 @@ namespace mining_tile_game
                 return null;
             }
         }
-        public static DataSet deleteUser(string pUsername)
+        public static DataSet editUser(string pNewUserName, string pNewUserPassword, string pNewUserEmail)
+        {
+
+        }
+
+        public static DataSet userLogin(string pUsername, string pPassword)
         {
             List<MySqlParameter> ParamList = new List<MySqlParameter>();
             var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            paramUsername.Value = pUsername;
-            ParamList.Add(paramUsername);
+            var paramUserPassword = new MySqlParameter("@UserPassword", MySqlDbType.VarChar, 64);
 
-            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminDeleteUser(@Username)", ParamList.ToArray());
+            paramUsername.Value = pUsername;
+            paramUserPassword.Value = pPassword;
+
+            ParamList.Add(paramUsername);
+            ParamList.Add(paramUserPassword);
+
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "userLogin(@Username,@UserPassword)", ParamList.ToArray());
+            //userName = pUsername;
+
+            foreach (DataRow aRow in aDataSet.Tables[0].Rows)
+            {
+                userName = (aRow["userName"]); //Stores username as a local variable to be used by the user menu
+            }
+            return aDataSet;
+        }
+        public static DataSet deleteUser()
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
+            paramUsername.Value = userName; //Accesses the stored username from the userMenu
+            ParamList.Add(paramUsername);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL deleteUser(@Username)", ParamList.ToArray());
 
             return aDataSet;
         }
-        //public static DataSet lockedUserCheck(string pUsername)
-        //{
-        //    List<MySqlParameter> ParamList = new List<MySqlParameter>();
-        //    var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-        //    paramUsername.Value = pUsername;
-        //    ParamList.Add(paramUsername);
-
-        //    var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL lockedUserCheck(@Username)", ParamList.ToArray());
-
-        //    return aDataSet;
-        //}
         public static DataSet getAllUsers()
         {
             var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getAllUsers()");
@@ -130,5 +116,3 @@ namespace mining_tile_game
         }
     }
 }
-
-
