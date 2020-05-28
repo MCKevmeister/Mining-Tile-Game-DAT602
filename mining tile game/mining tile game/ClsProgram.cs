@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Data;
-using MySql.Data.MySqlClient;
 
 
-namespace mining_tile_game
+namespace miningTileGame
 {
     public class ClsProgram
     {
@@ -14,8 +13,9 @@ namespace mining_tile_game
 
         private static void menu()
         {
-            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Test Application for Tile Game~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-                        "\n1) Test Conneciton with server\n2) Register a User\n3) Login with a user account\n4) Exit");
+            string menuText = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Test Application for Tile Game~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
+                        "\n1) Test Conneciton with server\n2) Register a User\n3) Login with a user account\n4) Exit";
+            Console.WriteLine(menuText);
             var response = Console.ReadLine();
             switch (response)
             {
@@ -71,8 +71,9 @@ namespace mining_tile_game
         {
             //string currentUser = ClsTest.getUserName().ToString();
             Console.WriteLine("The current User is" + ClsTest.getUserName().ToString());
-            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~User Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-                "n 1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Main Menu\n7) Exit Program");
+            string userMenuText = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~User Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
+                "n 1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Main Menu\n7) Exit Program";
+            Console.WriteLine(userMenuText);
             var response = Console.ReadLine();
             switch (response)
             {
@@ -109,11 +110,34 @@ namespace mining_tile_game
                     Console.WriteLine("What is the name of the Character?");
                     string characterName = Console.ReadLine();
                     Console.WriteLine("Please choose 4 skills by typing in the numbe\n1) Miner\n2) Gatherer\n3) Fisher\n4) Woodcutter\n5)Archer\n6)Smith");
-                    int skill1 = Console.Read();
-                    int skill2 = Console.Read();
-                    int skill3 = Console.Read();
-                    int skill4 = Console.Read();
-                    DataSet createCharacter = ClsTest.createCharacter(characterName, skill1, skill2, skill3, skill4);
+                    string[] skills = new string[3];
+                    for (int i = 0; i < 4; i++)
+                    {
+                        string skillResponse = Console.ReadLine();
+                        switch (skillResponse)
+                        {
+                            case "1":
+                                skills[i] = "Miner";
+                                break;
+                            case "2":
+                                skills[i] = "Gatherer";
+                                break;
+                            case "3":
+                                skills[i] = "Fisher";
+                                break;
+                            case "4":
+                                skills[i] = "Woodcutter";
+                                break;
+                            case "5":
+                                skills[i] = "Archer";
+                                break;
+                            case "6":
+                                skills[i] = "Smith";
+                                break;
+                        }
+                    } // not sure if this will work as I expect will test later
+  
+                    DataSet createCharacter = ClsTest.createCharacter(characterName, skills[0], skills[1], skills[3], skills[4]);
                     foreach (DataRow aRow in createCharacter.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
@@ -126,7 +150,7 @@ namespace mining_tile_game
                     ClsTest.getAllUserCharacters();
                     Console.WriteLine("What is the name of the Character you want to delete?");
                     string characterToDelete = Console.ReadLine();
-                    DataSet deleteCharacter = ClsTest.deleteCharacter(characterName);
+                    DataSet deleteCharacter = ClsTest.deleteCharacter();
                     foreach (DataRow aRow in deleteCharacter.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
@@ -163,9 +187,9 @@ namespace mining_tile_game
         }
         private static void gameMenu()
         {
-                Console.Write("test");
-            //1) Leave Game\n12) Game Generates Items\n13) Game Generates Mines\n14) Return to Game in Progress\n15) Character makes Move\n" +
+            string gameMenuText = ""; //1) Leave Game\n12) Game Generates Items\n13) Game Generates Mines\n14) Return to Game in Progress\n15) Character makes Move\n" +
             //"16) Character picks up item\n17) Player Uses Item on Mine\n
+            Console.Write(gameMenuText);
         }
         private static void adminMenu()
         {
@@ -190,9 +214,9 @@ namespace mining_tile_game
                     Console.WriteLine("Please enter a Password");
                     string registerPassword = Console.ReadLine();
                     Console.WriteLine("Is this user an Admin?\n1)Yes\n2)No");
-                    var adminResponse = Console.ReadLine();
+                    string adminResponse = Console.ReadLine().ToString();
                     bool registerAdmin;
-                    if (adminResponse = 1)
+                    if ( adminResponse  == "1")
                     {
                         registerAdmin = true;
                     }
