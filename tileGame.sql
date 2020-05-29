@@ -852,7 +852,7 @@ COMMIT;
 END//
 DELIMITER ;
 
-call leaveCharacterMap("stever", "13 by 13"); -- TODO
+call leaveCharacterMap("stever", "13 by 13");
 SELECT * FROM tblCharacterTile WHERE `characterName` = "stever";
 SELECT * FROM tblCharactermap WHERE `characterName` = "stever";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -882,7 +882,7 @@ START TRANSACTION;
         BEGIN
             INSERT INTO tblCharacterMap
             VALUES (pCharacterName, lcMap);
-            SELECT CONCAT(pCharacterName, " has rejoined the game") -- TODO double check when not tired
+            SELECT CONCAT(pCharacterName, " has rejoined the game") AS MESSAGE; -- TODO double check when not tired
         END;
     END IF;
 COMMIT;
@@ -1186,15 +1186,15 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Return list of active games first
 -- Admin selects game to end after
-
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS getActiveGames//
 CREATE PROCEDURE getActiveGames()
 BEGIN
     START TRANSACTION;
-        SELECT characterName, mapName
-        FROM tblCharacterMap;
+        SELECT characterName AS CM1, mapName AS CM1, characterName AS CM2
+        FROM tblCharacterMap as CM1, tblCharacterMap as CM2
+        WHERE CM1.characterName <> CM2.characterName AND
+        CM1.mapName = CM2.mapName;
         -- SELECT t1.characterName, t1.mapName, t2.characterName
         -- FROM tblCharacterMap AS t1, tblCharacterMap AS t2
         -- WHERE ((t1.charactername <> t2.CharacterName) AND (t1.mapName = t2.mapName));
