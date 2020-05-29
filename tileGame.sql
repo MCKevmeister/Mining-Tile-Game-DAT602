@@ -59,17 +59,18 @@ CREATE PROCEDURE makeTileGameDB()
             `xLocation` INTEGER NOT NULL,
             `yLocation` INTEGER NOT NULL,
             PRIMARY KEY (`mapName`, `xLocation`, `yLocation`),
-            FOREIGN KEY (`mapName`) REFERENCES tblMap (`mapName`)
+            FOREIGN KEY (mapName) REFERENCES tblMap (mapName) ON UPDATE CASCADE
             );
 
         CREATE TABLE tblTileItem(
+            `tileID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `mapName` VARCHAR(16) NOT NULL,
             `xLocation` INTEGER NOT NULL,
             `yLocation` INTEGER NOT NULL,
             `itemName` VARCHAR(32) NOT NULL,
             FOREIGN KEY (`mapName`, `xLocation`, `yLocation`) REFERENCES tblTile (`mapName`, `xLocation`, `yLocation`), 
-            FOREIGN KEY (`itemName`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE ON DELETE CASCADE,
-            PRIMARY KEY (`mapName`, `xLocation`, `yLocation`, `itemName`)
+            FOREIGN KEY (`itemName`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE ON DELETE CASCADE
+            -- PRIMARY KEY (`mapName`, `xLocation`, `yLocation`, `itemName`)
             );
 
         CREATE TABLE tblCharacter(
@@ -134,7 +135,7 @@ CREATE PROCEDURE makeTileGameDB()
             `xLocation` INTEGER NOT NULL,
             `yLocation` INTEGER NOT NULL,
             PRIMARY KEY (`characterName`, `mapName`, `xLocation`, `yLocation`),
-            FOREIGN KEY (`characterName`) REFERENCES tblCharacter (`characterName`),
+            FOREIGN KEY (`characterName`) REFERENCES tblCharacter (`characterName`) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY (`mapName`, `xLocation`, `yLocation`) REFERENCES tblTile (`mapName`, `xLocation`, `yLocation`)
             );
 	END//
@@ -182,17 +183,16 @@ Values
 ('Target', 'Bow'),
 ('Anvil', 'Hammer');
 
-INSERT INTO tblMap(`homeTileXLocation`, `homeTileYLocation`,`xSize`, `ySize`)
+INSERT INTO tblMap(`mapName`, `homeTileXLocation`, `homeTileYLocation`,`xSize`, `ySize`)
 Values
 
-(3, 3, 5, 5),
-(4, 4, 7, 7),
-(5, 5, 11, 11),
-(6, 6, 13, 13);
+("3 by 3", 2, 2, 5, 5),
+("5 by 5", 3, 3, 5, 5),
+("11 by 11", 5, 5, 11, 11),
+("13 by 13", 6, 6, 13, 13);
 
 INSERT INTO tblTile(`mapName`, `xLocation`, `yLocation`)
 Values 
-
 ("3 by 3", 1, 1), ("3 by 3", 1, 2), ("3 by 3", 1, 3),
 ("3 by 3", 2, 1), ("3 by 3", 2, 2), ("3 by 3", 2, 3),
 ("3 by 3", 3, 1), ("3 by 3", 3, 2), ("3 by 3", 3, 3),
@@ -210,9 +210,9 @@ Values
 ("11 by 11", 7, 1), ("11 by 11", 7, 2), ("11 by 11", 7, 3), ("11 by 11", 7, 4), ("11 by 11", 7, 5), ("11 by 11", 7, 6), ("11 by 11", 7, 7), ("11 by 11", 7, 8), ("11 by 11", 7, 9), ("11 by 11", 7, 10), ("11 by 11", 7, 11),
 ("11 by 11", 8, 1), ("11 by 11", 8, 2), ("11 by 11", 8, 3), ("11 by 11", 8, 4), ("11 by 11", 8, 5), ("11 by 11", 8, 6), ("11 by 11", 8, 7), ("11 by 11", 8, 8), ("11 by 11", 8, 9), ("11 by 11", 8, 10), ("11 by 11", 8, 11),
 ("11 by 11", 9, 1), ("11 by 11", 9, 2), ("11 by 11", 9, 3), ("11 by 11", 9, 4), ("11 by 11", 9, 5), ("11 by 11", 9, 6), ("11 by 11", 9, 7), ("11 by 11", 9, 8), ("11 by 11", 9, 9), ("11 by 11", 9, 10), ("11 by 11", 9, 11),
-("11 by 11", 10, 1), ("11 by 11", 10, 2), ("11 by 11", 10, 3), ("11 by 11", 10, 4), ("11 by 11"1, 10, 5), ("11 by 11", 10, 6), ("11 by 11", 10, 7), ("11 by 11", 10, 8), ("11 by 11", 10, 9), ("11 by 11", 10, 10), ("11 by 11", 10, 11),
-("11 by 11", 11, 1), ("11 by 11", 11, 2), ("11 by 11", 11, 3), ("11 by 11", 11, 4), ("11 by 11"1, 11, 5), ("11 by 11", 11, 6), ("11 by 11", 11, 7), ("11 by 11", 11, 8), ("11 by 11", 11, 9), ("11 by 11", 11, 10), ("11 by 11", 11, 11),
-("13 by 13", 1, 1), ("13 by 11", 1, 2), ("13 by 13", 1, 3), ("13 by 13", 1, 4), ("13 by 13", 1, 5), ("13 by 13", 1, 6), ("13 by 13", 1, 7), ("13 by 13", 1, 8), ("13 by 13", 1, 9), ("13 by 13", 1, 10), ("13 by 13", 1, 11), ("13 by 13", 1, 12), ("13 by 13", 1, 13),
+("11 by 11", 10, 1), ("11 by 11", 10, 2), ("11 by 11", 10, 3), ("11 by 11", 10, 4), ("11 by 11", 10, 5), ("11 by 11", 10, 6), ("11 by 11", 10, 7), ("11 by 11", 10, 8), ("11 by 11", 10, 9), ("11 by 11", 10, 10), ("11 by 11", 10, 11),
+("11 by 11", 11, 1), ("11 by 11", 11, 2), ("11 by 11", 11, 3), ("11 by 11", 11, 4), ("11 by 11", 11, 5), ("11 by 11", 11, 6), ("11 by 11", 11, 7), ("11 by 11", 11, 8), ("11 by 11", 11, 9), ("11 by 11", 11, 10), ("11 by 11", 11, 11),
+("13 by 13", 1, 1), ("13 by 13", 1, 2), ("13 by 13", 1, 3), ("13 by 13", 1, 4), ("13 by 13", 1, 5), ("13 by 13", 1, 6), ("13 by 13", 1, 7), ("13 by 13", 1, 8), ("13 by 13", 1, 9), ("13 by 13", 1, 10), ("13 by 13", 1, 11), ("13 by 13", 1, 12), ("13 by 13", 1, 13),
 ("13 by 13", 2, 1), ("13 by 13", 2, 2), ("13 by 13", 2, 3), ("13 by 13", 2, 4), ("13 by 13", 2, 5), ("13 by 13", 2, 6), ("13 by 13", 2, 7), ("13 by 13", 2, 8), ("13 by 13", 2, 9), ("13 by 13", 2, 10), ("13 by 13", 2, 11), ("13 by 13", 2, 12), ("13 by 13", 2, 13),
 ("13 by 13", 3, 1), ("13 by 13", 3, 2), ("13 by 13", 3, 3), ("13 by 13", 3, 4), ("13 by 13", 3, 5), ("13 by 13", 3, 6), ("13 by 13", 3, 7), ("13 by 13", 3, 8), ("13 by 13", 3, 9), ("13 by 13", 3, 10), ("13 by 13", 3, 11), ("13 by 13", 3, 12), ("13 by 13", 3, 13),
 ("13 by 13", 4, 1), ("13 by 13", 4, 2), ("13 by 13", 4, 3), ("13 by 13", 4, 4), ("13 by 13", 4, 5), ("13 by 13", 4, 6), ("13 by 13", 4, 7), ("13 by 13", 4, 8), ("13 by 13", 4, 9), ("13 by 13", 4, 10), ("13 by 13", 4, 11), ("13 by 13", 4, 12), ("13 by 13", 4, 13),
@@ -221,30 +221,28 @@ Values
 ("13 by 13", 7, 1), ("13 by 13", 7, 2), ("13 by 13", 7, 3), ("13 by 13", 7, 4), ("13 by 13", 7, 5), ("13 by 13", 7, 6), ("13 by 13", 7, 7), ("13 by 13", 7, 8), ("13 by 13", 7, 9), ("13 by 13", 7, 10), ("13 by 13", 7, 11), ("13 by 13", 7, 12), ("13 by 13", 7, 13),
 ("13 by 13", 8, 1), ("13 by 13", 8, 2), ("13 by 13", 8, 3), ("13 by 13", 8, 4), ("13 by 13", 8, 5), ("13 by 13", 8, 6), ("13 by 13", 8, 7), ("13 by 13", 8, 8), ("13 by 13", 8, 9), ("13 by 13", 8, 10), ("13 by 13", 8, 11), ("13 by 13", 8, 12), ("13 by 13", 8, 13),
 ("13 by 13", 9, 1), ("13 by 13", 9, 2), ("13 by 13", 9, 3), ("13 by 13", 9, 4), ("13 by 13", 9, 5), ("13 by 13", 9, 6), ("13 by 13", 9, 7), ("13 by 13", 9, 8), ("13 by 13", 9, 9), ("13 by 13", 9, 10), ("13 by 13", 9, 11), ("13 by 13", 9, 12), ("13 by 13", 9, 13),
-("13 by 13", 10, 1), ("13 by 13", 10, 2), ("13 by 13", 10, 3), ("13 by 13", 10, 4), ("13 by 13"1, 10, 5), ("13 by 13", 10, 6), ("13 by 13", 10, 7), ("13 by 13", 10, 8), ("13 by 13", 10, 9), ("13 by 13", 10, 10), ("13 by 13", 10, 11), ("13 by 13", 10, 12), ("13 by 13", 10, 13),
-("13 by 13", 11, 1), ("13 by 13", 11, 2), ("13 by 13", 11, 3), ("13 by 13", 11, 4), ("13 by 13"1, 11, 5), ("13 by 13", 11, 6), ("13 by 13", 11, 7), ("13 by 13", 11, 8), ("13 by 13", 11, 9), ("13 by 13", 11, 10), ("13 by 13", 11, 11), ("13 by 13", 11, 12), ("13 by 13", 11, 13),
-("13 by 13", 12, 1), ("13 by 13", 12, 2), ("13 by 13", 12, 3), ("13 by 13", 12, 4), ("13 by 13"1, 12, 5), ("13 by 13", 12, 6), ("13 by 13", 12, 7), ("13 by 13", 12, 8), ("13 by 13", 12, 9), ("13 by 13", 12, 10), ("13 by 13", 12, 11), ("13 by 13", 12, 12), ("13 by 13", 12, 13),
-("13 by 13", 13, 1), ("13 by 13", 13, 2), ("13 by 13", 13, 3), ("13 by 13", 13, 4), ("13 by 13"1, 13, 5), ("13 by 13", 13, 6), ("13 by 13", 13, 7), ("13 by 13", 13, 8), ("13 by 13", 13, 9), ("13 by 13", 13, 10), ("13 by 13", 13, 11), ("13 by 13", 13, 12), ("13 by 13", 13, 13);
+("13 by 13", 10, 1), ("13 by 13", 10, 2), ("13 by 13", 10, 3), ("13 by 13", 10, 4), ("13 by 13", 10, 5), ("13 by 13", 10, 6), ("13 by 13", 10, 7), ("13 by 13", 10, 8), ("13 by 13", 10, 9), ("13 by 13", 10, 10), ("13 by 13", 10, 11), ("13 by 13", 10, 12), ("13 by 13", 10, 13),
+("13 by 13", 11, 1), ("13 by 13", 11, 2), ("13 by 13", 11, 3), ("13 by 13", 11, 4), ("13 by 13", 11, 5), ("13 by 13", 11, 6), ("13 by 13", 11, 7), ("13 by 13", 11, 8), ("13 by 13", 11, 9), ("13 by 13", 11, 10), ("13 by 13", 11, 11), ("13 by 13", 11, 12), ("13 by 13", 11, 13),
+("13 by 13", 12, 1), ("13 by 13", 12, 2), ("13 by 13", 12, 3), ("13 by 13", 12, 4), ("13 by 13", 12, 5), ("13 by 13", 12, 6), ("13 by 13", 12, 7), ("13 by 13", 12, 8), ("13 by 13", 12, 9), ("13 by 13", 12, 10), ("13 by 13", 12, 11), ("13 by 13", 12, 12), ("13 by 13", 12, 13),
+("13 by 13", 13, 1), ("13 by 13", 13, 2), ("13 by 13", 13, 3), ("13 by 13", 13, 4), ("13 by 13", 13, 5), ("13 by 13", 13, 6), ("13 by 13", 13, 7), ("13 by 13", 13, 8), ("13 by 13", 13, 9), ("13 by 13", 13, 10), ("13 by 13", 13, 11), ("13 by 13", 13, 12), ("13 by 13", 13, 13);
 
  INSERT INTO tblTileItem(`mapName`, `xLocation`, `yLocation`, `itemName`)
  VALUES
- ('3 by 3', 1, 1, 'Pickaxe');
--- (18, 'Basket'),
--- (119, 'Rod'),
--- (78, 'Axe'),
--- (65, 'Bow'),
--- (50, 'Hammer'),
--- (128, 'Rod'),
--- (129, 'Bow'),
--- (130, 'Basket'); -- TODO
+ ('3 by 3', 1, 1, 'Pickaxe'),
+ ('3 by 3', 3, 3, 'Basket'),
+ ('5 by 5', 2, 4, 'Pickaxe'),
+ ('5 by 5', 3, 5, 'Rod'),
+ ('5 by 5', 4, 3, 'Axe'),
+ ('5 by 5', 5, 5, 'Bow'),
+ ('5 by 5', 1, 3, 'Hammer');
 
 INSERT INTO tblCharacter(`characterName`, `username`, `xPosition`, `yPosition`,`characterScoreTotal`, `isActive`)
 Values 
-('MarkCharacter', 'Mark', 5, 5, 0, false),
-('MaryCharacter', 'Mary', 5, 5, 0, false),
-('JohnCharacter', 'John', 5, 5, 0, false),
-('StepehnCharacter', 'Stephen', 2, 2, 0, false),
-('MichaelCharacter', 'Michael', 2, 2, 0, false);
+('MarkCharacter', 'Mark', 2, 2, 0, false),
+('MaryCharacter', 'Mary', 2, 2, 0, false),
+('JohnCharacter', 'John', 2, 2, 0, false),
+('StepehnCharacter', 'Stephen', 3, 3, 0, false),
+('MichaelCharacter', 'Michael', 3, 3, 0, false);
 
 INSERT INTO tblCharacterSkill(`characterName`, `skillName`)
 Values 
@@ -282,35 +280,31 @@ Values ('MarkCharacter','Pickaxe',1),
 ('MichaelCharacter','Hammer',1),
 ('MichaelCharacter','Pickaxe',1);
 
---  TODO
--- INSERT INTO tblCharacterMap(`characterName`, `mapName`, `score`)
--- Values
--- ('MarkCharacter',"13 by 13",0),
--- ('MaryCharacter',"13 by 13",0),
--- ('JohnCharacter',"13 by 13",0),
--- ('StepehnCharacter',"5 by 5",0),
--- ('MichaelCharacter',"5 by 5",0);
+INSERT INTO tblCharacterMap(`characterName`, `mapName`, `score`)
+Values
+('MarkCharacter',"3 by 3",0),
+('MaryCharacter',"3 by 3",0),
+('JohnCharacter',"5 by 5",0),
+('StepehnCharacter',"5 by 5",0),
+('MichaelCharacter',"5 by 5",0);
 
+INSERT INTO tblMineTile(`mineName`, `mapName`, `xLocation`, `yLocation`)
+Values
+('Gem', "3 by 3", 1, 3),
+('Berry',"3 by 3", 3, 1),
+('Fish', "5 by 5", 1, 2),
+('Tree', "5 by 5", 2, 3),
+('Target', "5 by 5", 4, 4),
+('Anvil', "5 by 5", 4, 1),
+('Gem',	 "5 by 5", 2, 5);
 
--- INSERT INTO tblMineTile(`mineName`, `mapName`, `xLocation`, `yLocation`)-- needs updating
--- Values
--- ('Gem',2),
--- ('Berry',99),
--- ('Fish',27),
--- ('Tree',18),
--- ('Target',68),
--- ('Anvil',97),
--- ('Gem',	122),
--- ('Berry',123),
--- ('Fish'	,124);
-
--- INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`)-- needs updating
--- Values
--- ('MarkCharacter',60),
--- ('MaryCharacter',60),
--- ('JohnCharacter',60),
--- ('StepehnCharacter',126),
--- ('MichaelCharacter',126);
+INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`)
+Values
+('MarkCharacter', "3 by 3", 2, 2),
+('MaryCharacter', "3 by 3", 2, 2),
+('JohnCharacter', "5 by 5", 3, 3),
+('StepehnCharacter', "5 by 5", 3, 3),
+('MichaelCharacter', "5 by 5", 3, 3);
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- UPDATE Statements
@@ -440,7 +434,6 @@ DELETE FROM tblUser;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DROP PROCEDURE IF EXISTS registerUser;
-
 DELIMITER //
 CREATE PROCEDURE registerUser(pUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64))
 BEGIN
@@ -460,6 +453,7 @@ END//
 DELIMITER ;
 
 CALL registerUser("steve", "steve", "steve");
+call registeruser("foo", "foo", "foo");
 
 SELECT * FROM tbluser;
 
@@ -468,47 +462,44 @@ SELECT * FROM tbluser;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DROP PROCEDURE IF EXISTS userLogin;
-
 DELIMITER //
 CREATE PROCEDURE userLogin(pUserName VARCHAR(32), pUserPassword VARCHAR(64))
 BEGIN
     DECLARE lcUserName VARCHAR(32);
     DECLARE lcUserPassword VARCHAR(64);
     DECLARE lcUserIsLocked BOOLEAN;
-    DECLARE lcUserLoginAttemps INT;
+    DECLARE lcUserLoginAttempts INT;
     START TRANSACTION;
         SELECT `username`, `userPassword`, `islocked`, `loginAttempts`
         FROM tblUser
         WHERE `username` = pUsername
-        INTO lcUserName, lcUserPassword, lcUserIsLocked, lcUserLoginAttemps;
+        INTO lcUserName, lcUserPassword, lcUserIsLocked, lcUserLoginAttempts;
         IF (lcUserName IS NULL)
         THEN
             BEGIN
                 SELECT "Username doesn't exist" AS `MESSAGE`;
             END;
-        ELSEIF ((lcUserName = pUserName) AND (lcUserPassword <> pUserPassword))
-        THEN 
-            IF (lcUserLoginAttemps >= 5)
-            THEN
-                BEGIN
-                    UPDATE tblUser
-                    SET `isLocked` = 1
-                    WHERE `username` = pUserName;
-                    SELECT "User has been is locked out. Please contact an administrator to get this user unlocked" AS `MESSAGE`;
-                END;
-            ELSE
+        ELSEIF ((lcUserName = pUserName) AND (lcUserPassword <> pUserPassword)) THEN
             BEGIN
                 UPDATE tbluser
-                SET `loginAttempts` = loginAttempts + 1
+                SET `loginAttempts` = lcUserLoginAttempts + 1
                 WHERE `username` = pUserName;
+                SET lcUserLoginAttempts = lcUserLoginAttempts + 1;
                 SELECT "Incorrect Password" AS `MESSAGE`;
             END;
-            END IF;
-        ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND (lcUserIsLocked = 0) AND (lcUserLoginAttemps < 5))
+        ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND ((lcUserLoginAttempts >= 5) OR (lcUserIsLocked)))
+        THEN
+            BEGIN
+                UPDATE tblUser
+                SET `isLocked` = 1
+                WHERE `username` = pUserName;
+                SELECT "User has been is locked out. Please contact an administrator to get this user unlocked" AS `MESSAGE`;
+            END;
+        ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND (lcUserIsLocked = 0) AND (lcUserLoginAttempts < 5))
         THEN
             BEGIN
                 UPDATE tbluser
-                SET `isOnline` = true
+                SET `isOnline` = true, `loginAttempts` = 0
                 WHERE (`username` = pUserName AND `userPassword` = pUserPassword);
                 SELECT CONCAT(pUserName, " is now Online") AS `MESSAGE`;
             END;
@@ -517,7 +508,7 @@ BEGIN
 END//
 DELIMITER ;
 
-call userLogin("foo", "f0oo");
+call userLogin("steve", "steve");
 SELECT * FROM tblUser;
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -529,26 +520,32 @@ DROP PROCEDURE IF EXISTS editUser//
 CREATE PROCEDURE editUser(pUserName VARCHAR(32), pNewUserName VARCHAR(32), pNewUserPassword VARCHAR(64), pNewUserEmail VARCHAR(64))
 BEGIN
     START TRANSACTION;
-    IF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName) THEN
-        BEGIN
-            SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
-        END;
-    ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
-    THEN
-        BEGIN
-            SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
-        END;
-    ELSE
-        BEGIN
-            UPDATE tblUser
-            SET `email` = pNewUserEmail, `userPassword` = pNewUserPassword, `username` = pNewUserName
-            WHERE pUserName = `username`;
-            SELECT "User detials have been updated" AS `Message`;
-        END;
-    END IF;
+		IF NOT EXISTS (SELECT * FROM tblUser WHERE `username` = pUserName) THEN
+			BEGIN
+				SELECT CONCAT("Sorry, the user ", pUserName, " doesn't exist") AS MESSAGE;
+			END;
+		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName) THEN
+			BEGIN
+				SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
+			END;
+		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
+		THEN
+			BEGIN
+				SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
+			END;
+		ELSE
+			BEGIN
+				UPDATE tblUser
+				SET `email` = pNewUserEmail, `userPassword` = pNewUserPassword, `username` = pNewUserName
+				WHERE pUserName = `username`;
+				SELECT "User detials have been updated" AS `Message`;
+			END;
+		END IF;
     COMMIT;
 END//
 DELIMITER ;
+
+call editUser("steve", "foo", "foo", "foo");
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Delete User 
@@ -565,10 +562,12 @@ BEGIN
             SELECT CONCAT(pUserName, " has been deleted") AS MESSAGE;
         ELSE
             SELECT CONCAT(pUserName, " doesn't exists") AS MESSAGE;
+		END IF;
     COMMIT;
 END//
 DELIMITER ;
 
+call deleteUser("foo");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Creates Character (inlcuding character skills created) WORKING
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -578,52 +577,34 @@ DROP PROCEDURE IF EXISTS createCharacter//
 CREATE PROCEDURE createCharacter(pUserName VARCHAR(32), pCharacterName VARCHAR(32), pSkill1 VARCHAR(20), pSkill2 VARCHAR(20), pSkill3 VARCHAR(20), pSkill4 VARCHAR(20))
 BEGIN
 	START TRANSACTION;
-    IF EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName)
-	THEN
-        BEGIN
-            SELECT CONCAT("Sorry, the character ", pCharacterName, " has already been taken") AS MESSAGE;
-        END;
-    ELSE
-		BEGIN
-            INSERT INTO tblCharacter (`characterName`, `username`)
-            VALUES(pCharacterName, pUserName);
-            INSERT INTO tblCharacterSkill(`characterName`, `skillName`)
-            VALUES(pCharacterName, pSkill1), (pCharacterName, pSkill2), (pCharacterName, pSkill3), (pCharacterName, pSkill4);
-            SELECT CONCAT(pCharacterName, " has been created with ", pSkill1, ", ", pSkill2, ", ", pSkill3, "and ", pSkill4,, " as skills") AS MESSAGE;
-        END;
-	END IF;
+		IF EXISTS(SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName)
+		THEN
+			BEGIN
+				SELECT CONCAT("Sorry, the character ", pCharacterName, " has already been taken") AS MESSAGE;
+			END;
+		ELSE
+			BEGIN
+				INSERT INTO tblCharacter(`characterName`, `username`)
+				VALUES(pCharacterName, pUserName);
+				
+				INSERT INTO tblCharacterSkill(`characterName`, `skillName`)
+				VALUES(pCharacterName, pSkill1),(pCharacterName, pSkill2),(pCharacterName,pSkill3),(pCharacterName,pSkill4);
+                SELECT CONCAT(pCharacterName, " has been created with ", pSkill1, ", ", pSkill2, ", ", pSkill3, " and ", pSkill4, " as skills") AS MESSAGE;
+			END;
+		END IF;
 	COMMIT;
 END//
 DELIMITER ;
 
+call createCharacter("steve", "foo", "Miner","Gatherer","Fisher","Woodcutter");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Deletes Character
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Get
-DELIMITER //
-DROP PROCEDURE IF EXISTS deleteCharacter//
-CREATE PROCEDURE deleteCharacter(pCharacterName VARCHAR(32), pUserName VARCHAR(32))
-BEGIN
-    START TRANSACTION;
-        IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `username` = pUserName)
-            DELETE FROM tblCharacter
-            WHERE `characterName` = pCharacterName;
-            SELECT CONCAT(pCharacterName, " has been deleted") AS MESSAGE;
-        ELSE
-            SELECT CONCAT(pCharacterName, " hasn't been deleted") AS MESSAGE;
-        END IF;
-    COMMIT;
-END//
-DELIMITER ;
+-- Return all characters a user has. Also used in select character to play game
 
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Select Character to play game
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Return all characters a user has. usefull in a few places.
 DELIMITER //
-DROP PROCEDURE IF EXISTS getAllUserCharacters()//
-CREATE PROCEDURE selectChagetAllUserCharactersracter(pUserName VARCHAR(32))
+DROP PROCEDURE IF EXISTS getAllUserCharacters//
+CREATE PROCEDURE getAllUserCharacters(pUserName VARCHAR(32))
 BEGIN
     START TRANSACTION;
         SELECT `characterName`
@@ -633,27 +614,57 @@ BEGIN
 END//
 DELIMITER ;
 
+call getAllUserCharacters("foo");
+
+DELIMITER //
+DROP PROCEDURE IF EXISTS deleteCharacter//
+CREATE PROCEDURE deleteCharacter(pCharacterName VARCHAR(32), pUserName VARCHAR(32))
+BEGIN
+    START TRANSACTION;
+        IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `username` = pUserName)) THEN
+			BEGIN
+				DELETE FROM tblCharacter
+				WHERE `characterName` = pCharacterName;
+				SELECT CONCAT(pCharacterName, " has been deleted") AS MESSAGE;
+			END;
+        ELSE
+			BEGIN
+				SELECT CONCAT(pCharacterName, " hasn't been deleted") AS MESSAGE;
+            END;
+        END IF;
+    COMMIT;
+END//
+DELIMITER ;
+
+call deleteCharacter("bar", "foo");
+
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Select Character to play game
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 -- user selects character to play with
 DELIMITER //
 DROP PROCEDURE IF EXISTS selectCharacter//
-CREATE PROCEDURE selectCharacter(pCharacterName VARCHAR(32))
+CREATE PROCEDURE selectCharacter(pCharacterName VARCHAR(32), pUserName VARCHAR(32))
 BEGIN
     START TRANSACTION;
-        IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `userName` = pUserName))
+        IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `userName` = pUserName)) THEN
             BEGIN
                 UPDATE `tblcharacter`
                 SET isActive = 1
                 WHERE `characterName` = pCharactername;
             END;
-        ELSEIF (EXISTS ((SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `userName` <> pUserName))
+        ELSEIF (EXISTS ((SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `userName` <> pUserName))) THEN
             SELECT CONCAT(pCharacterName, " doesn't belong to this player") AS MESSAGE;
-        ELSEIF (NOT EXISTS ((SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName))
+        ELSEIF (NOT EXISTS ((SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName))) THEN
             SELECT CONCAT(pCharacterName, " doesn't exist") AS MESSAGE;
         END IF;
     COMMIT;
 END//
 DELIMITER ;
 
+call selectCharacter("foo", "steve");
+SELECT * FROM tblCharacter;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Display a list of online characters
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -663,19 +674,21 @@ DROP PROCEDURE IF EXISTS onlineCharacters//
 CREATE PROCEDURE onlineCharacters()
 BEGIN
     START TRANSACTION;
-        SELECT *
+        SELECT `characterName`
         FROM tblcharacter
-        WHERE `isOnline` = true;
+        WHERE `isActive` = true;
     COMMIT;
 END//
 DELIMITER ;
 
+call onlineCharacters();
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Create Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -- Returns list of maps
--- User chooses from list of maps to play
+-- User chooses from list of maps to play in C# app
+-- set character location to home tile of map
 DELIMITER //
 DROP PROCEDURE IF EXISTS getMaps//
 CREATE PROCEDURE getMaps()
@@ -687,43 +700,48 @@ BEGIN
 END//
 DELIMITER ;
 
+call getMaps();
+
 -- Returns a list of online characters
 -- Character is selected as opponent
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS chooseOpponent//
-CREATE PROCEDURE chooseOpponent()
+CREATE PROCEDURE chooseOpponent(pCharacterName VARCHAR(32))
 BEGIN
 START TRANSACTION;
     SELECT `characterName`
     FROM tblCharacter
-    WHERE (`isActive`) = 1;
+    WHERE (`isActive` = 1); -- can't make this not in TODO
 COMMIT;
 END//
 DELIMITER ;
 
+call chooseOpponent("bar");
+-- spawn items TODO
+-- spawn mines (not overlapping) TODO
+-- set character location to hometile of mapName TODO
 DELIMITER //
 DROP PROCEDURE IF EXISTS createGame//
 CREATE PROCEDURE createGame(pCharacter1 VARCHAR(32), pCharacter2 VARCHAR(32), pMap VARCHAR(16))
 BEGIN
     START TRANSACTION;
-        IF (EXISTS(SELECT * FROM tblCharacter WHERE `characterName` = pCharacter1) AND (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter2 AND (SELECT * FROM tblMap WHERE `mapname` = pMap)))
+        IF (EXISTS(SELECT * FROM tblCharacter WHERE `characterName` = pCharacter1) AND (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter2 AND (SELECT * FROM tblMap WHERE `mapname` = pMap))) THEN
             INSERT INTO tblCharacterMap 
             VALUES(pCharacter1, pMap), (pCharacter2, pMap);
             -- Spawn Items TODO
             -- Spawn Mines TODO
-            SELECT CONCAT(pCharacter1, " and ", pCharacter2, " are now playing on ", pMap) AS MESSAGE
+            SELECT CONCAT(pCharacter1, " and ", pCharacter2, " are now playing on ", pMap) AS MESSAGE;
         ELSE
             SELECT "Unable to Create Game" AS MESSAGE;
+		END IF;
     COMMIT;
 END//
 DELIMITER ;
 
-
+call createGame("bar", "foo" "13 by 13"); -- TODO and test
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Leave Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 -- Return a list of games the character is currently in
 -- User makes a selection for game to leave
 
@@ -739,6 +757,8 @@ COMMIT;
 END//
 DELIMITER ;
 
+Call getCharactersMaps("bar"); -- needs proper test TODO
+
 -- Delete from tlbCharacterMap
 DELIMITER //
 DROP PROCEDURE IF EXISTS leaveCharacterMap//
@@ -751,12 +771,14 @@ COMMIT;
 END//
 DELIMITER ;
 
+call leaveCharacterMap(); -- TODO
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Return to Game in Progress
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -- More of a GUI thing, switching from menu to game window?
 -- Not really able to simulate in CLI??
+-- maybe more a menu switch in C# app to allow new inputs
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character makes Move
@@ -767,115 +789,130 @@ DROP PROCEDURE IF EXISTS characterMakesMove//
 CREATE PROCEDURE characterMakesMove(pCharacterName VARCHAR(32), pDirection VARCHAR(5), pMapName VARCHAR(16)) 
 BEGIN
     START TRANSACTION;
-    IF (pDirection = "left")
-        IF (EXISTS (SELECT * FROM tblCharacter WHERE characterName = pCharacterName))AND (NOT EXISTS (
+    IF (pDirection = "left") THEN
+        IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND 
+            (EXISTS (SELECT * 
+				FROM tblCharacterTile as CT
+				WHERE (
+                CT.characterName = pCharacterName AND
+                CT.mapName = pMapName AND
+                CT.yLocation - 1 >= 1))) AND
+            (NOT EXISTS (
                 SELECT * 
-                FROM tblCharacter c, tblCharacter t
+                FROM tblCharacterTile c, tblCharacterTile t, tblMap q
                 WHERE 
-                (c.characterName = pCharacterName AND ((
-                c.xPosition - 1 = t.xPosition AND
-                c.yPosition = t.yPosition  AND
-                t.characterName <> c.characterName) 
-                OR c.xPosition - 1 < 1 ))
-            ) 
-            THEN 
+                (c.characterName = pCharacterName AND ( -- check if character exists, no character exists at new x and y and and map x and y are inside map boundary
+                c.xLocation - 1 = t.xLocation AND
+                c.yLocation = t.yLocation  AND
+                c.mapName = t.mapName AND
+                t.characterName <> c.characterName)))) THEN
             BEGIN
                 UPDATE tblCharacter
                 SET `xPosition` = `xPosition` - 1
                 WHERE (characterName = pCharacterName);
-
-                UPDATE tblCharacterMap
-                SET `xPosition` = `xPosition` - 1
+                UPDATE tblCharacterTile
+                SET `xLocation` = `xLocation` - 1
                 WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-                
-                SELECT 'Moved Left' AS MESSAGE, pCharacterName as characterName;
+                SELECT CONCAT(pCharacterName, ' Moved Left') AS MESSAGE, pCharacterName as characterName;
             END; 
         ELSE
             SELECT 'Not able to move left' AS MESSAGE;
         END IF;
-    ELSEIF (pDirection = "right")
-        IF (EXISTS (SELECT * FROM tblCharacter WHERE characterName = pCharacterName))AND (NOT EXISTS (
+    ELSEIF (pDirection = "right") THEN
+        IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND
+            (EXISTS (SELECT * 
+				FROM tblCharacterTile as CT
+				WHERE (
+                CT.characterName = pCharacterName AND
+                CT.mapName = pMapName AND
+                CT.xLocation + 1 <= (SELECT xSize FROM tblMap WHERE mapName = pMapName)))) AND
+            (NOT EXISTS (
                 SELECT * 
-                FROM tblCharacter c, tblCharacter t
+                FROM tblCharacterTile c, tblCharacterTile t, tblMap q
                 WHERE 
-                (c.characterName = pCharacterName AND ((
-                c.xPosition + 1 = t.xPosition AND
-                c.yPosition = t.yPosition  AND
-                t.characterName <> c.characterName) 
-                OR c.xPosition + 1 > (SELECT xSize FROM tblMap WHERE mapName = pMapName))) -- map max x-size
-            )
-            THEN 
-            BEGIN
-                UPDATE tblCharacter
-                SET `xPosition` = `xPosition` + 1
-                WHERE (characterName = pCharacterName);
-
-                UPDATE tblCharacterMap
-                SET `xPosition` = `xPosition` + 1
-                WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-                
-                SELECT 'Moved right' AS MESSAGE, pCharacterName as characterName;
-            END; 
+                (c.characterName = pCharacterName AND (
+                c.xLocation + 1 = t.xLocation AND
+                c.yLocation = t.yLocation  AND
+                c.mapName = t.mapName AND
+                t.characterName <> c.characterName)))) THEN 
+				BEGIN
+					UPDATE tblCharacter
+					SET `xPosition` = `xPosition` + 1
+					WHERE (characterName = pCharacterName);
+					UPDATE tblCharacterTile
+					SET `xLocation` = `xLocation` + 1
+					WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
+					SELECT CONCAT(pCharacterName, ' Moved right') AS MESSAGE, pCharacterName as characterName;
+				END; 
         ELSE
-            SELECT 'Not able to move right' AS MESSAGE;
+			BEGIN
+				SELECT 'Not able to move right' AS MESSAGE;
+			END; 	
         END IF;
-    ELESEIF (pDirection = "up")
-        IF (EXISTS (SELECT * FROM tblCharacter WHERE characterName = pCharacterName))AND (NOT EXISTS (
+    ELSEIF (pDirection = "up") THEN
+        IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND 
+            (EXISTS (SELECT * 
+				FROM tblCharacterTile as CT
+				WHERE (
+                CT.characterName = pCharacterName AND
+                CT.mapName = pMapName AND
+                CT.yLocation - 1 >= 1 ))) AND
+            (NOT EXISTS ( 
                 SELECT * 
-                FROM tblCharacter c, tblCharacter t
+                FROM tblCharacterTile c, tblCharacterTile t
                 WHERE 
-                (c.characterName = pCharacterName AND ((
-                c.xPosition = t.xPosition AND
-                c.yPosition - 1 = t.yPosition  AND
-                t.characterName <> c.characterName) 
-                OR c.yPosition - 1 < 1 )) -- map minimum y-size
-            ) 
-            THEN 
+                (c.characterName = pCharacterName AND 
+                (c.xLocation = t.xLocation AND c.yLocation - 1 = t.yLocation  AND
+                c.mapName = t.mapName AND t.characterName <> c.characterName)))) THEN
             BEGIN
                 UPDATE tblCharacter
                 SET `yPosition` = `yPosition` - 1
                 WHERE (characterName = pCharacterName);
-
-                UPDATE tblCharacterMap
-                SET `yPosition` = `yPosition` - 1
+                UPDATE tblCharacterTile
+                SET `yLocation` = `yLocation` - 1
                 WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
                 
-                SELECT 'Moved up' AS MESSAGE, pCharacterName as characterName;
+                SELECT CONCAT(pCharacterName, ' Moved up') AS MESSAGE, pCharacterName as characterName; -- do i need to pass back the character name??
             END; 
         ELSE
             SELECT 'Not able to move up' AS MESSAGE;
         END IF;
-    ELSEIF (pDirection = "down")
-        IF (EXISTS (SELECT * FROM tblCharacter WHERE characterName = pCharacterName))AND (NOT EXISTS (
-                SELECT * 
-                FROM tblCharacter c, tblCharacter t
-                WHERE 
-                (c.characterName = pCharacterName AND ((
-                c.xPosition = t.xPosition AND
-                c.yPosition + 1 = t.yPosition  AND
-                t.characterName <> c.characterName) 
-                OR c.yPosition + 1 > (SELECT ySize FROM tblMap WHERE mapName = pMapName) )) -- map max y-size
-            ) 
-            THEN 
+    ELSEIF (pDirection = "down") THEN
+        IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName) AND 
+			(EXISTS (SELECT * 
+				FROM tblCharacterTile as CT
+				WHERE (
+                CT.characterName = pCharacterName AND
+                CT.mapName = pMapName AND
+                CT.yLocation + 1 <= (SELECT ySize FROM tblMap WHERE mapName = pMapName)))) AND
+			(NOT EXISTS 
+				(SELECT * 
+				FROM tblCharacterTile c, tblCharacterTile t
+				WHERE 
+                (c.characterName = pCharacterName AND 
+				(c.xLocation = t.xLocation AND c.yLocation + 1 = t.yLocation AND 
+				c.mapName = t.mapName AND t.characterName <> c.characterName))))) -- map max y-size
+            THEN
             BEGIN
                 UPDATE tblCharacter
                 SET `yPosition` = `yPosition` + 1
                 WHERE (characterName = pCharacterName);
-
-                UPDATE tblCharacterMap
-                SET `yPosition` = `yPosition` + 1
-                WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-                
-                SELECT 'Moved up' AS MESSAGE, pCharacterName as characterName;
+                UPDATE tblCharacterTile
+                SET `yLocation` = `yLocation` + 1
+                WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);               
+                SELECT CONCAT(pCharacterName, ' Moved down') AS MESSAGE, pCharacterName as characterName;
             END; 
         ELSE
-            SELECT 'Not able to move up' AS MESSAGE;
+            SELECT 'Not able to move down' AS MESSAGE;
         END IF;
     END IF;
     COMMIT;
 END//
 DELIMITER ;
 
+call characterMakesMove("MarkCharacter", "right", "3 by 3");
+
+SELECT * FROM tblCharacterTile WHERE `characterName` = "MarkCharacter";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character picks up item
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -947,41 +984,44 @@ BEGIN
     COMMIT;    --
 END//
 
-DELIMITER ;
+DELIMITER //
 DROP PROCEDURE IF EXISTS useItem//
 CREATE PROCEDURE useItem(pCharacterName VARCHAR(32), pUserName VARCHAR(32), pItemName VARCHAR(32), pMap VARCHAR(16), pXLocation INTEGER, pYLocation INTEGER) 
 BEGIN
     DECLARE lcMine VARCHAR(20);
     START TRANSACTION;
-        SELECT `mineName` FROM tblMineTile
-        WHERE ((`mapName` = pMap) AND (`xLocation` = pXLocation) AND (`yLocation` = pYLocation))
-        INTO lcMine;
-        IF (lcMine is NULL) THEN -- check if tile has mine
-            SELECT "There is nothing to mine on this tile" AS MESSAGE;
-        ELSEIF (EXISTS (SELECT * FROM tblMine WHERE (`mineName` = lcMine AND `minedBy` = pItemName))) THEN -- if true, check if item matches mine
-            BEGIN
-                UPDATE tblCharacterItem
-                SET `itemDurability` = `itemDurability` - 1
-                WHERE `itemName` = pItemName;-- this will do it for all items a character has of the same name...... grrr
-                UPDATE tblCharacter -- Add points to character and user
-                SET `characterScoreTotal` = `characterScoreTotal` + 1;
-                UPDATE tblCharacterMap
-                SET `score` = `score` + 1;
-                UPDATE tblUser
-                SET `userScore` = `userScore` + 1
-                WHERE `username` = pUserName;
-                IF (SELECT `itemDurability` FROM tblCharacterItem WHERE `itemDurability` <= 0) THEN
-                    BEGIN
-                        DELETE FROM tblCharacterItem
-                        WHERE `itemDurability` <= 0;
-                    END;
-            END;
-        ELSE
-            BEGIN
-                SELECT CONCAT(pItemName, "doesn't mine", lcMine) AS MESSAGE;
-            END;
-        END IF;
-    COMMIT;
+		BEGIN
+			SELECT `mineName` FROM tblMineTile
+			WHERE ((`mapName` = pMap) AND (`xLocation` = pXLocation) AND (`yLocation` = pYLocation))
+			INTO lcMine;
+			IF (lcMine is NULL) THEN -- check if tile has mine
+				SELECT "There is nothing to mine on this tile" AS MESSAGE;
+			ELSEIF (EXISTS (SELECT * FROM tblMine WHERE (`mineName` = lcMine AND `minedBy` = pItemName))) THEN -- if true, check if item matches mine
+				BEGIN
+					UPDATE tblCharacterItem
+					SET `itemDurability` = `itemDurability` - 1
+					WHERE `itemName` = pItemName;-- this will do it for all items a character has of the same name...... grrr
+					UPDATE tblCharacter -- Add points to character and user
+					SET `characterScoreTotal` = `characterScoreTotal` + 1;
+					UPDATE tblCharacterMap
+					SET `score` = `score` + 1;
+					UPDATE tblUser
+					SET `userScore` = `userScore` + 1
+					WHERE `username` = pUserName;
+					IF (SELECT `itemDurability` FROM tblCharacterItem WHERE `itemDurability` <= 0) THEN
+						BEGIN
+							DELETE FROM tblCharacterItem
+							WHERE `itemDurability` <= 0;
+						END;
+					END IF;
+				END;
+			ELSE
+				BEGIN
+					SELECT CONCAT(pItemName, "doesn't mine", lcMine) AS MESSAGE;
+				END;
+			END IF;
+		END;
+	COMMIT;
 END//
 DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -993,7 +1033,7 @@ CREATE PROCEDURE characterChats(pCharacterName VARCHAR(32), pMessage VARCHAR(255
 BEGIN
     START TRANSACTION;
         INSERT INTO tblChat
-        VALUES (pCharacterName, pMessage, NOW())
+        VALUES (pCharacterName, pMessage, NOW());
     COMMIT;
 END//
 DELIMITER ;
