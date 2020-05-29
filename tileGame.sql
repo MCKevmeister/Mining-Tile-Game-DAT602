@@ -401,33 +401,33 @@ SELECT * FROM tblCharacterTile;
 -- DELETE Statements
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DELETE FROM tblCharacterTile;
+-- DELETE FROM tblCharacterTile;
 
-DELETE FROM tblMineTile;
+-- DELETE FROM tblMineTile;
 
-DELETE FROM tblCharacterMap;
+-- DELETE FROM tblCharacterMap;
 
-DELETE FROM tblCharacterItem;
+-- DELETE FROM tblCharacterItem;
 
-DELETE FROM tblChat;
+-- DELETE FROM tblChat;
 
-DELETE FROM tblCharacterSkill;
+-- DELETE FROM tblCharacterSkill;
 
-DELETE FROM tblCharacter;
+-- DELETE FROM tblCharacter;
 
-DELETE FROM tblTileItem;
+-- DELETE FROM tblTileItem;
 
-DELETE FROM tblTile;
+-- DELETE FROM tblTile;
 
-DELETE FROM tblMap;
+-- DELETE FROM tblMap;
 
-DELETE FROM tblMine;
+-- DELETE FROM tblMine;
 
-DELETE FROM tblItem;
+-- DELETE FROM tblItem;
 
-DELETE FROM tblSkill;
+-- DELETE FROM tblSkill;
 
-DELETE FROM tblUser;
+-- DELETE FROM tblUser;
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Register a User 
@@ -465,11 +465,11 @@ DROP PROCEDURE IF EXISTS userLogin;
 DELIMITER //
 CREATE PROCEDURE userLogin(pUserName VARCHAR(32), pUserPassword VARCHAR(64))
 BEGIN
-    DECLARE lcUserName VARCHAR(32);
-    DECLARE lcUserPassword VARCHAR(64);
-    DECLARE lcUserIsLocked BOOLEAN;
-    DECLARE lcUserLoginAttempts INT;
-    START TRANSACTION;
+	DECLARE lcUserName VARCHAR(32);
+	DECLARE lcUserPassword VARCHAR(64);
+	DECLARE lcUserIsLocked BOOLEAN;
+	DECLARE lcUserLoginAttempts INT;
+	START TRANSACTION;
         SELECT `username`, `userPassword`, `islocked`, `loginAttempts`
         FROM tblUser
         WHERE `username` = pUsername
@@ -504,7 +504,7 @@ BEGIN
                 SELECT CONCAT(pUserName, " is now Online") AS `MESSAGE`;
             END;
         END IF;
-    COMMIT;
+	COMMIT;
 END//
 DELIMITER ;
 
@@ -538,7 +538,7 @@ BEGIN
 				UPDATE tblUser
 				SET `email` = pNewUserEmail, `userPassword` = pNewUserPassword, `username` = pNewUserName
 				WHERE pUserName = `username`;
-				SELECT "User detials have been updated" AS `Message`;
+				SELECT "User details have been updated" AS `Message`;
 			END;
 		END IF;
     COMMIT;
@@ -597,6 +597,7 @@ END//
 DELIMITER ;
 
 call createCharacter("steve", "stever", "Miner","Gatherer","Fisher","Woodcutter");
+call createCharacter("steve", "steve", "Miner","Gatherer","Fisher","Woodcutter");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Deletes Character
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -636,7 +637,7 @@ BEGIN
 END//
 DELIMITER ;
 
-call deleteCharacter("bar", "foo");
+call deleteCharacter("stever", "steve");
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Select Character to play game
@@ -652,7 +653,8 @@ BEGIN
             BEGIN
                 UPDATE `tblcharacter`
                 SET isActive = 1
-                WHERE `characterName` = pCharactername;
+                WHERE `characterName` = pCharacterName;
+                SELECT CONCAT(pCharacterName, " is now active") AS MESSAGE;-- might need to signal some how TODO SIGNAL STATE???
             END;
         ELSEIF (EXISTS ((SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `userName` <> pUserName))) THEN
             SELECT CONCAT(pCharacterName, " doesn't belong to this player") AS MESSAGE;
@@ -663,7 +665,7 @@ BEGIN
 END//
 DELIMITER ;
 
-call selectCharacter("stever", "steve"); -- might need to signal some how TODO SIGNAL STATE???
+call selectCharacter("steve", "steve"); 
 SELECT * FROM tblCharacter;
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -718,6 +720,7 @@ END//
 DELIMITER ;
 
 call chooseOpponent("steve");
+
 DELIMITER //
 DROP PROCEDURE IF EXISTS createGame//
 CREATE PROCEDURE createGame(pCharacter1 VARCHAR(32), pCharacter2 VARCHAR(32), pMap VARCHAR(16))
@@ -740,11 +743,11 @@ BEGIN
         FROM tblMap
         WHERE `mapName` = pMap
         INTO lcXHome, lcYHome;
-
         SELECT xSize, ySize
         FROM tblMap
         WHERE `mapName` = pMap
         INTO lcXMax, lcYMax;
+        IF NOT EXISTS (SELECT * FROM tbl) -- a game being played characters already
         IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter1) AND 
 			EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter2 AND `isActive` = 1) AND 
 			EXISTS (SELECT * FROM tblMap WHERE `mapname` = pMap)) THEN
@@ -765,7 +768,7 @@ BEGIN
                                 WHEN 3 THEN SET itemSpawnName = 'Rod'; 
                                 WHEN 4 THEN SET itemSpawnName = 'Axe'; 
                                 WHEN 5 THEN SET itemSpawnName = 'Bow'; 
-                                WHEN 6 THEN SET itemSpawnName = 'Hammer';  -- switch case to catch all the 6 outcomes
+                                WHEN 6 THEN SET itemSpawnName = 'Hammer';
                             END CASE;
 							INSERT INTO tblTileItem (`mapName`, `xLocation`, `yLocation`, `itemName`)
                             VALUES (pMap, xSpawn, ySpawn, itemSpawn);
@@ -810,7 +813,7 @@ BEGIN
 END//
 DELIMITER ;
 
-call createGame("steve", "steve", "13 by 13"); -- note character can only play one game at a time
+call createGame("steve", "stever", "13 by 13"); -- note character can only play one game at a time
 
 DELETE FROM tblCharacterMap
 WHERE `characterName` = "steve" OR `characterName` = "stever";
@@ -824,7 +827,6 @@ SELECT * FROM tblCharacterTile;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Return a list of games the character is currently in
 -- User makes a selection for game to leave
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS getCharactersMaps//
 CREATE PROCEDURE getCharactersMaps(pCharacterName VARCHAR(32))
@@ -858,42 +860,95 @@ SELECT * FROM tblCharactermap WHERE `characterName` = "stever";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Return to Game in Progress
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS getMapsCharacterHasLeft//
 CREATE PROCEDURE getMapsCharacterHasLeft(pCharacterName VARCHAR(32))
 BEGIN
-DECLARE lcMap VARCHAR(32);
--- DECLARE lcX INTEGER;
--- DECLARE lcY INTEGER;
-START TRANSACTION;
-	SELECT `mapName`
-	FROM tblCharacterTile
-    WHERE `characterName` = pCharacterName
-    INTO lcMap;
-    -- SELECT `xPosition`, `yPosition`
-    -- FROM tblCharacter
-    -- WHERE `characterName` = pCharacterName;
-    IF (lcMap IS NOT NULL) AND
-    (NOT EXISTS (
-        SELECT `mapName`
-        FROM tblCharacterMap
-        WHERE (`characterName` = pCharacterName))) THEN
-        BEGIN
-            INSERT INTO tblCharacterMap
-            VALUES (pCharacterName, lcMap);
-            SELECT CONCAT(pCharacterName, " has rejoined the game") AS MESSAGE; -- TODO double check when not tired
-        END;
-    END IF;
-COMMIT;
+    START TRANSACTION; 
+        SELECT * 
+        FROM tblCharacterMap 
+        WHERE ((`characterName` = pCharacterName) AND (`mapName` NOT IN (SELECT `mapName`
+                        FROM tblCharacterTile 
+                        WHERE `characterName` = pCharacterName)));
+    COMMIT;
 END//
-DELIMITER ;
 
 call getMapsCharacterhasLeft("steve");
--- More of a GUI thing, switching from menu to game window?
--- Not really able to simulate in CLI??
--- maybe more a menu switch in C# app to allow new inputs
 
+DELIMITER //
+DROP PROCEDURE IF EXISTS characterReturnToMap//
+CREATE PROCEDURE characterReturnToMap(pCharacterName VARCHAR(32), pMap VARCHAR(16), pDirection VARCHAR(16) = NULL)
+DECLARE lcCharacterX INTEGER;
+DECLARE lcCharacterY INTEGER;
+BEGIN
+    START TRANSACTION;  -- check if tile is empty
+    SELECT `xLocation`, `yLocation`
+    FROM tblCharacterTile
+    WHERE `characterName` = pCharacterName AND
+    `mapName` = pMap
+    INTO lcCharacterX, lcCharacterY;
+    IF (NOT EXISTS(SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName)) THEN
+        BEGIN
+            SELECT CONCAT(pCharacterName, " doesn't exist") AS MESSAGE;
+        END;
+    ELSEIF (NOT EXISTS(SELECT * FROM tblMap WHERE `mapName` = pMap)) THEN
+        BEGIN
+            SELECT CONCAT(pMap, " doesn't exist") AS MESSAGE;
+        END;
+    ELSE
+        BEGIN
+            IF (EXISTS(SELECT *  -- check if tile empty
+                FROM tblCharacterTile
+                WHERE ((`characterName`<> pCharacterName) AND
+                (`mapName` = pMap) AND
+                (`xLocation` = lcCharacterX) AND
+                (`yLocation` = lcCharacterY)) THEN
+                    BEGIN -- tile is occupied by another character , need to choose empty tile
+                        IF(pDirection = NULL) THEN
+                            BEGIN
+                                SELECT ("This tile is occupied. Please choose an orthogonally adjacent tile to re-enter this game on") AS MESSAGE;
+                            END;
+                        ELSE
+                            BEGIN
+                                CASE pDirection
+                                    WHEN "up" THEN SET lcCharacterY = lcCharacterY - 1;
+                                    WHEN "right" THEN SET lcCharacterX = lcCharacterX + 1;
+                                    WHEN "down" THEN SET lcCharacterY = lcCharacterY + 1; 
+                                    WHEN "left" THEN SET lcCharacterX = lcCharacterX - 1; 
+                                END CASE;
+                                IF((EXISTS(SELECT *
+                                    FROM tblMap
+                                    WHERE `xSize` >= lcCharacterX)) AND
+                                    (EXISTS(SELECT *
+                                    FROM tblMap
+                                    WHERE `ySize` >= lcCharacterY)) AND
+                                    (lcCharacterX >= 1) AND (lcCharacterY >= 1)) THEN
+                                    BEGIN
+                                        INSERT INTO tblCharacterMap 
+                                        VALUES (pCharacterName, lcMap);
+                                        SELECT CONCAT(pCharacterName, " has rejoined ", pMap) AS MESSAGE; -- check if character x and y is inside coords of map
+                                    END;
+                                ELSE
+                                    BEGIN
+                                        SELECT CONCAT(pDirection, " would put ", pCharacterName, " out of the map.Please choose another direction.")
+                                    END;
+                                END IF;
+                            END;
+                        END IF;
+                    END;
+            ELSE
+                BEGIN
+                    INSERT INTO tblCharacterMap
+                    VALUES (pCharacterName, lcMap);
+                    SELECT CONCAT(pCharacterName, " has rejoined ", pMap) AS MESSAGE;
+                END
+            END IF;
+        END;
+    END IF;
+    COMMIT;
+END//
+
+call characterReturnsToMap(); -- todo test
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character makes Move
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1233,20 +1288,26 @@ DROP PROCEDURE IF EXISTS adminAddUser//
 CREATE PROCEDURE adminAddUser(pUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BOOLEAN)
 BEGIN
 START TRANSACTION;
-    IF EXISTS(
-        SELECT *
-        FROM tblUser
-        WHERE `username` = pUserName OR `email` = pEmail)
-    THEN
-        BEGIN
-            SELECT 'Username or Email already exists' AS MESSAGE;
-        END;
+    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+        IF EXISTS(
+            SELECT *
+            FROM tblUser
+            WHERE `username` = pUserName OR `email` = pEmail)
+        THEN
+            BEGIN
+                SELECT 'Username or Email already exists' AS MESSAGE;
+            END;
+        ELSE
+            BEGIN
+                INSERT INTO tblUser(`username` , `email`, `userPassword`, `isAdmin`)
+                VALUES (pUserName, pEmail, pUserPassword, pIsAdmin);
+
+                SELECT 'User has been registered' AS MESSAGE;
+            END;
+        END IF;
     ELSE
         BEGIN
-            INSERT INTO tblUser(`username` , `email`, `userPassword`, `isAdmin`)
-            VALUES (pUserName, pEmail, pUserPassword, pIsAdmin);
-
-            SELECT 'User has been registered' AS MESSAGE;
+            SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
         END;
     END IF;
 COMMIT;
@@ -1258,23 +1319,31 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminEditUser//
-CREATE PROCEDURE adminEditUser(pUserName VARCHAR(32) , pNewUserName VARCHAR(64), pEmail VARCHAR(64), pNewUserEmail VARCHAR(64), pUserPassword VARCHAR(64), pLoginAttempts INTEGER, pUserScore INTEGER, pIsLocked BOOLEAN, pIsAdmin BOOLEAN)
+CREATE PROCEDURE adminEditUser(pAdminUserName VARCHAR(32), pUserName VARCHAR(32) , pNewUserName VARCHAR(64), pEmail VARCHAR(64), pNewUserEmail VARCHAR(64), pUserPassword VARCHAR(64), pLoginAttempts INTEGER, pUserScore INTEGER, pIsLocked BOOLEAN, pIsAdmin BOOLEAN)
 BEGIN
 START TRANSACTION;
-    IF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName)
-    THEN
+    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
         BEGIN
-            SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
-        END;
-    ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
-    THEN
-        BEGIN
-            SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
+            IF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName)
+            THEN
+                BEGIN
+                    SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
+                END;
+            ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
+            THEN
+                BEGIN
+                    SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
+                END;
+            ELSE
+                UPDATE tblUser
+                SET `email` = username, pNewUserName = pNewUserEmail, `userPassword` = pNewUserPassword, `loginAttempts` = pLoginAttempts, `userScore` = pUserScore
+                WHERE pUserName = `username`;
+            END IF;
         END;
     ELSE
-        UPDATE tblUser
-        SET `email` = username, pNewUserName = pNewUserEmail, `userPassword` = pNewUserPassword, `loginAttempts` = pLoginAttempts, `userScore` = pUserScore
-        WHERE pUserName = `username`;
+        BEGIN
+            SELCT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+        END;
     END IF;
 COMMIT;   
 END//
@@ -1287,10 +1356,21 @@ DELIMITER ;
 -- Get all users
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminGetAllUsers//
-CREATE PROCEDURE adminGetAllUsers() 
-BEGIN
-    SELECT `username`
-    FROM tblUser;
+CREATE PROCEDURE adminGetAllUsers(pAdminUserName)
+    START TRANSACTION;
+        BEGIN
+            IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+                BEGIN
+                    SELECT `username`
+                    FROM tblUser;
+                END;
+            ELSE
+                BEGIN
+                    SELCT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+                END;
+            END IF;
+        END;
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -1298,12 +1378,12 @@ DELIMITER ;
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminDeleteUser//
 CREATE PROCEDURE adminDeleteUser(pUserName VARCHAR(32))
-START TRANSACTION;
-	DELETE FROM tblUser 
-    WHERE `username` = pUserName;
+    START TRANSACTION;
+        DELETE FROM tblUser 
+        WHERE `username` = pUserName;
 
-	SELECT CONCAT(pUserName, " is now Deleted") AS MESSAGE;
-COMMIT;  
+        SELECT CONCAT(pUserName, " is now Deleted") AS MESSAGE;
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -1314,22 +1394,32 @@ DELIMITER ;
 -- Get list of locked users
 DELIMITER //
 DROP PROCEDURE IF EXISTS getLockedUsers//
-CREATE PROCEDURE getLockedUsers(pUserName VARCHAR(32)) 
+CREATE PROCEDURE getLockedUsers() 
 BEGIN
-    SELECT `username`
-    FROM tblUser
-    WHERE `isLocked` = true;
+    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+        SELECT `username`
+        FROM tblUser
+        WHERE `isLocked` = true;
 END//
 DELIMITER ;
+
 -- Choose user to unlock
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminUnlockUser//
 CREATE PROCEDURE adminUnlockUser(pUserName VARCHAR(32)) 
 BEGIN
-    UPDATE tblUser
-    SET `isLocked` = false, `loginAttempts` = 0
-    WHERE `username` = pUserName;
+    IF EXISTS (SELECT * FROM tblUser WHERE `userName` = pUserName) THEN
+        BEGIN
+            UPDATE tblUser
+            SET `isLocked` = false, `loginAttempts` = 0
+            WHERE `username` = pUserName;
 
-    SELECT CONCAT(pUserName + " has been unlocked") as Message;
+            SELECT CONCAT(pUserName, " has been unlocked") as Message;
+        END;
+    ELSE
+        BEGIN
+            SELECT CONCAT("The user ", pUserName, " doesn't exist") AS MESSAGE;
+        END;
+    END IF;
 END//
 DELIMITER ;
