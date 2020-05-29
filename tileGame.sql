@@ -32,7 +32,7 @@ CREATE PROCEDURE makeTileGameDB()
             `itemName` VARCHAR(32) PRIMARY KEY,
             -- `itemID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `matchingSkill` VARCHAR(20) NOT NULL,
-			`itemDurability` INTEGER NOT NULL,
+			-- `itemDurability` INTEGER NOT NULL, -- not necssary here
             `maxDurability` INTEGER NOT NULL,
 			FOREIGN KEY (`matchingSkill`) REFERENCES tblSkill (`skillName`) ON UPDATE CASCADE
 			);
@@ -63,14 +63,13 @@ CREATE PROCEDURE makeTileGameDB()
             );
 
         CREATE TABLE tblTileItem(
-            `tileID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `mapName` VARCHAR(16) NOT NULL,
             `xLocation` INTEGER NOT NULL,
             `yLocation` INTEGER NOT NULL,
             `itemName` VARCHAR(32) NOT NULL,
             FOREIGN KEY (`mapName`, `xLocation`, `yLocation`) REFERENCES tblTile (`mapName`, `xLocation`, `yLocation`), 
-            FOREIGN KEY (`itemName`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE ON DELETE CASCADE
-            -- PRIMARY KEY (`mapName`, `xLocation`, `yLocation`, `itemName`)
+            FOREIGN KEY (`itemName`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE ON DELETE CASCADE,
+            PRIMARY KEY (`mapName`, `xLocation`, `yLocation`, `itemName`)
             );
 
         CREATE TABLE tblCharacter(
@@ -104,7 +103,8 @@ CREATE PROCEDURE makeTileGameDB()
             -- `characterItemID` AUTO_INCREMENT PRIMARY KEY,
 			`characterName` VARCHAR(32) NOT NULL,
             `itemName` VARCHAR(32) NOT NULL,
-            `quantity` INTEGER, 
+            `quantity` INTEGER,
+            `itemDurability` INTEGER NOT NULL,
             -- PRIMARY KEY (`characterName`, `itemName`),
             FOREIGN KEY (`characterName`) REFERENCES tblCharacter (`characterName`) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY (`itemName`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE
@@ -165,14 +165,14 @@ Values
 ('Archer', 'Gets points for shooting targets with a bow'),
 ('Smith', 'Gets points for using a hammer on an anvil');
 
-INSERT INTO tblItem(`itemName`, `matchingSkill`, `itemDurability`, `maxDurability`)
+INSERT INTO tblItem(`itemName`, `matchingSkill`, `maxDurability`)
 Values 
-('Pickaxe', 'Miner', 3, 3),
-('Basket','Gatherer', 3, 3),
-('Rod', 'Fisher', 3, 3),
-('Axe', 'Woodcutter', 3, 3),
-('Bow', 'Archer', 3, 3),
-('Hammer', 'Smith', 3, 3);
+('Pickaxe', 'Miner', 3),
+('Basket','Gatherer', 3),
+('Rod', 'Fisher', 3),
+('Axe', 'Woodcutter', 3),
+('Bow', 'Archer', 3),
+('Hammer', 'Smith', 3);
 
 INSERT INTO tblMine(`mineName`, `minedBy`)
 Values 
@@ -260,25 +260,25 @@ Values
 ('StepehnCharacter', 'I mean we could'), ('StepehnCharacter', 'That sounds great'),
 ('MichaelCharacter', 'Chocolate rain'), ('MichaelCharacter', 'we woo');
 
-INSERT INTO tblCharacterItem(`characterName`, `itemName`, `quantity`)
-Values ('MarkCharacter','Pickaxe',1),
-('MarkCharacter','Basket',1),
-('MarkCharacter','Rod',1),
-('MaryCharacter','Bow',1),
-('MaryCharacter','Rod',1),
-('MaryCharacter','Axe',1),
-('JohnCharacter','Bow',1),
-('JohnCharacter','Basket',1),
-('JohnCharacter','Hammer',1),
-('JohnCharacter','Pickaxe',1),
-('StepehnCharacter','Hammer',1),
-('StepehnCharacter','Bow',1),
-('StepehnCharacter','Rod',1),
-('StepehnCharacter','Axe',1),
-('MichaelCharacter','Bow',1),
-('MichaelCharacter','Basket',1),
-('MichaelCharacter','Hammer',1),
-('MichaelCharacter','Pickaxe',1);
+INSERT INTO tblCharacterItem(`characterName`, `itemName`, `quantity`, `itemDurability`)
+Values ('MarkCharacter','Pickaxe',1,3),
+('MarkCharacter','Basket',1,3),
+('MarkCharacter','Rod',1,3),
+('MaryCharacter','Bow',1,3),
+('MaryCharacter','Rod',1,3),
+('MaryCharacter','Axe',1,3),
+('JohnCharacter','Bow',1,3),
+('JohnCharacter','Basket',1,3),
+('JohnCharacter','Hammer',1,3),
+('JohnCharacter','Pickaxe',1,3),
+('StepehnCharacter','Hammer',1,3),
+('StepehnCharacter','Bow',1,3),
+('StepehnCharacter','Rod',1,3),
+('StepehnCharacter','Axe',1,3),
+('MichaelCharacter','Bow',1,3),
+('MichaelCharacter','Basket',1,3),
+('MichaelCharacter','Hammer',1,3),
+('MichaelCharacter','Pickaxe',1,3);
 
 INSERT INTO tblCharacterMap(`characterName`, `mapName`, `score`)
 Values
@@ -596,7 +596,7 @@ BEGIN
 END//
 DELIMITER ;
 
-call createCharacter("steve", "foo", "Miner","Gatherer","Fisher","Woodcutter");
+call createCharacter("steve", "stever", "Miner","Gatherer","Fisher","Woodcutter");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Deletes Character
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -614,7 +614,7 @@ BEGIN
 END//
 DELIMITER ;
 
-call getAllUserCharacters("foo");
+call getAllUserCharacters("steve");
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS deleteCharacter//
@@ -663,8 +663,9 @@ BEGIN
 END//
 DELIMITER ;
 
-call selectCharacter("foo", "steve");
+call selectCharacter("stever", "steve"); -- might need to signal some how TODO SIGNAL STATE???
 SELECT * FROM tblCharacter;
+
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Display a list of online characters
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -711,34 +712,113 @@ BEGIN
 START TRANSACTION;
     SELECT `characterName`
     FROM tblCharacter
-    WHERE (`isActive` = 1); -- can't make this not in TODO
+    WHERE (`isActive` = 1 AND `characterName` <> pCharacterName);
 COMMIT;
 END//
 DELIMITER ;
 
-call chooseOpponent("bar");
--- spawn items TODO
--- spawn mines (not overlapping) TODO
--- set character location to hometile of mapName TODO
+call chooseOpponent("steve");
 DELIMITER //
 DROP PROCEDURE IF EXISTS createGame//
 CREATE PROCEDURE createGame(pCharacter1 VARCHAR(32), pCharacter2 VARCHAR(32), pMap VARCHAR(16))
 BEGIN
+	DECLARE lcXHome INTEGER;
+    DECLARE lcYHome INTEGER;
+    DECLARE lcXMax INTEGER;
+    DECLARE lcYMax INTEGER;
+    DECLARE i INTEGER;
+    DECLARE xSpawn INTEGER;
+    DECLARE ySpawn INTEGER;
+    DECLARE itemSpawn INTEGER;
+    DECLARE itemSpawnName VARCHAR(32);
+    DECLARE itemCount INTEGER;
+    DECLARE mineSpawn INTEGER;
+    DECLARE mineSpawnName VARCHAR(32);
     START TRANSACTION;
-        IF (EXISTS(SELECT * FROM tblCharacter WHERE `characterName` = pCharacter1) AND (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter2 AND (SELECT * FROM tblMap WHERE `mapname` = pMap))) THEN
-            INSERT INTO tblCharacterMap 
-            VALUES(pCharacter1, pMap), (pCharacter2, pMap);
-            -- Spawn Items TODO
-            -- Spawn Mines TODO
-            SELECT CONCAT(pCharacter1, " and ", pCharacter2, " are now playing on ", pMap) AS MESSAGE;
+		SELECT COUNT(`itemName`) FROM tblItem INTO itemCount;
+        SELECT `homeTileXLocation`, `homeTileYLocation`
+        FROM tblMap
+        WHERE `mapName` = pMap
+        INTO lcXHome, lcYHome;
+
+        SELECT xSize, ySize
+        FROM tblMap
+        WHERE `mapName` = pMap
+        INTO lcXMax, lcYMax;
+        IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter1) AND 
+			EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter2 AND `isActive` = 1) AND 
+			EXISTS (SELECT * FROM tblMap WHERE `mapname` = pMap)) THEN
+            BEGIN
+                INSERT INTO tblCharacterMap (`characterName`, `mapName`)
+                VALUES(pCharacter1, pMap), (pCharacter2, pMap);
+                INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`)
+                VALUES (pCharacter1, pMap, lcXHome, lcYHome), (pCharacter2, pMap, lcXHome, lcYHome);
+                BEGIN
+                spawnItem: LOOP
+                    IF (i < lcXMax) THEN -- using X map size arbitarily to not spawn that many items for a certian map size
+                            SELECT round((RAND() * (lcXMax)) + 1) into xSpawn;
+                            SELECT round((RAND() * (lcXMax)) + 1) into ySpawn;
+		                    SELECT round((RAND() * (itemCount)) + 1) into itemSpawn;
+                            CASE itemSpawn
+                                WHEN 1 THEN SET itemSpawnName = 'Pickaxe';
+                                WHEN 2 THEN SET itemSpawnName = 'Basket';
+                                WHEN 3 THEN SET itemSpawnName = 'Rod'; 
+                                WHEN 4 THEN SET itemSpawnName = 'Axe'; 
+                                WHEN 5 THEN SET itemSpawnName = 'Bow'; 
+                                WHEN 6 THEN SET itemSpawnName = 'Hammer';  -- switch case to catch all the 6 outcomes
+                            END CASE;
+							INSERT INTO tblTileItem (`mapName`, `xLocation`, `yLocation`, `itemName`)
+                            VALUES (pMap, xSpawn, ySpawn, itemSpawn);
+							SET i = i + 1;
+							ITERATE spawnItem;
+                    END IF;
+                    LEAVE spawnItem;
+                END LOOP spawnItem;
+                spawnMine: LOOP
+                    IF (i < lcXMax) THEN -- using X map size arbitarily to not spawn that many mines for a certian map size
+                            SELECT round(RAND() * (lcXMax)) + 1 into xSpawn;
+                            SELECT round(RAND() * (lcXMax)) + 1 into ySpawn;
+		                    SELECT round(RAND() * (itemCount)) + 1 into mineSpawn;
+                            IF EXISTS(SELECT * FROM tblTileItem WHERE ((`mapName` = pMap) AND (`xLocation` = xSpawn) AND (`yLocation` = ySpawn))) THEN
+                                    ITERATE spawnMine;
+							END IF;
+                            CASE itemSpawn 
+                                WHEN 1 THEN SET mineSpawnName = 'Gem';
+                                WHEN 2 THEN SET mineSpawnName = 'Berry';
+                                WHEN 3 THEN SET mineSpawnName = 'Fish'; 
+                                WHEN 4 THEN SET mineSpawnName = 'Tree'; 
+                                WHEN 5 THEN SET mineSpawnName = 'Target'; 
+                                WHEN 6 THEN SET mineSpawnName = 'Anvil';
+                            END CASE;
+
+							INSERT INTO tblTileItem (`mapName`, `xLocation`, `yLocation`, `mineName`) 
+                            VALUES (pMap, xSpawn, ySpawn, mineSpawn);
+							SET i = i + 1;
+							ITERATE spawnMine;
+                    END IF;
+                    LEAVE spawnMine;
+                END LOOP spawnMine;
+                END;
+                SELECT CONCAT(pCharacter1, " and ", pCharacter2, " are now playing on ", pMap) AS MESSAGE;
+            END;
         ELSE
-            SELECT "Unable to Create Game" AS MESSAGE;
+            BEGIN
+                SELECT "Unable to Create Game" AS MESSAGE;
+            END;
 		END IF;
     COMMIT;
 END//
 DELIMITER ;
 
-call createGame("bar", "foo" "13 by 13"); -- TODO and test
+call createGame("steve", "steve", "13 by 13"); -- note character can only play one game at a time
+
+DELETE FROM tblCharacterMap
+WHERE `characterName` = "steve" OR `characterName` = "stever";
+DELETE FROM tblCharacterTile
+WHERE `characterName` = "steve" OR `characterName` = "stever";
+
+SELECT * FROM tblCharacterMap;
+SELECT * FROM tblCharacterTile;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Leave Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -757,7 +837,7 @@ COMMIT;
 END//
 DELIMITER ;
 
-Call getCharactersMaps("bar"); -- needs proper test TODO
+Call getCharactersMaps("steve");
 
 -- Delete from tlbCharacterMap
 DELIMITER //
@@ -767,15 +847,49 @@ BEGIN
 START TRANSACTION;
     DELETE FROM tblCharacterMap
     WHERE `characterName` = pCharacterName AND `mapName` = pMap;
+    SELECT CONCAT(pcharacterName, " has left the game") AS MESSAGE;
 COMMIT;
 END//
 DELIMITER ;
 
-call leaveCharacterMap(); -- TODO
+call leaveCharacterMap("stever", "13 by 13"); -- TODO
+SELECT * FROM tblCharacterTile WHERE `characterName` = "stever";
+SELECT * FROM tblCharactermap WHERE `characterName` = "stever";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Return to Game in Progress
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+DELIMITER //
+DROP PROCEDURE IF EXISTS getMapsCharacterHasLeft//
+CREATE PROCEDURE getMapsCharacterHasLeft(pCharacterName VARCHAR(32))
+BEGIN
+DECLARE lcMap VARCHAR(32);
+-- DECLARE lcX INTEGER;
+-- DECLARE lcY INTEGER;
+START TRANSACTION;
+	SELECT `mapName`
+	FROM tblCharacterTile
+    WHERE `characterName` = pCharacterName
+    INTO lcMap;
+    -- SELECT `xPosition`, `yPosition`
+    -- FROM tblCharacter
+    -- WHERE `characterName` = pCharacterName;
+    IF (lcMap IS NOT NULL) AND
+    (NOT EXISTS (
+        SELECT `mapName`
+        FROM tblCharacterMap
+        WHERE (`characterName` = pCharacterName))) THEN
+        BEGIN
+            INSERT INTO tblCharacterMap
+            VALUES (pCharacterName, lcMap);
+            SELECT CONCAT(pCharacterName, " has rejoined the game") -- TODO double check when not tired
+        END;
+    END IF;
+COMMIT;
+END//
+DELIMITER ;
+
+call getMapsCharacterhasLeft("steve");
 -- More of a GUI thing, switching from menu to game window?
 -- Not really able to simulate in CLI??
 -- maybe more a menu switch in C# app to allow new inputs
@@ -796,7 +910,7 @@ BEGIN
 				WHERE (
                 CT.characterName = pCharacterName AND
                 CT.mapName = pMapName AND
-                CT.yLocation - 1 >= 1))) AND
+                CT.xLocation - 1 >= 1))) AND
             (NOT EXISTS (
                 SELECT * 
                 FROM tblCharacterTile c, tblCharacterTile t, tblMap q
@@ -857,7 +971,7 @@ BEGIN
                 CT.characterName = pCharacterName AND
                 CT.mapName = pMapName AND
                 CT.yLocation - 1 >= 1 ))) AND
-            (NOT EXISTS ( 
+            (NOT EXISTS (
                 SELECT * 
                 FROM tblCharacterTile c, tblCharacterTile t
                 WHERE 
@@ -910,20 +1024,30 @@ BEGIN
 END//
 DELIMITER ;
 
-call characterMakesMove("MarkCharacter", "right", "3 by 3");
+call characterMakesMove("MarkCharacter", "left", "3 by 3");
 
 SELECT * FROM tblCharacterTile WHERE `characterName` = "MarkCharacter";
+SELECT * FROM tblCharacterTile WHERE `mapName` = "3 by 3";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character picks up item
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS characterPicksUpItem//
-CREATE PROCEDURE characterPicksUpItem(pCharacterName VARCHAR(32), pMap VARCHAR(16), pXLocation INTEGER, pYLocation INTEGER) 
+CREATE PROCEDURE characterPicksUpItem(pCharacterName VARCHAR(32), pMap VARCHAR(16)) -- , pXLocation INTEGER, pYLocation INTEGER) -- dont need to pass location, can retrieve from DB
 BEGIN
     DECLARE lcItem VARCHAR(32);
+    DECLARE lcXLocation INTEGER;
+    DECLARE lcYLocation INTEGER;
+    DECLARE lcItemDurability INTEGER;
     START TRANSACTION;
-        SELECT `itemName` FROM tblTileItem
-        WHERE ((`mapName` = pMap) AND (`xLocation` = pXLocation) AND (`yLocation` = pYLocation))
+		SELECT xLocation, yLocation
+        FROM tblCharacterTile
+        WHERE `characterName` = pCharacterName AND `mapName` = pMap
+        INTO lcXLocation, lcYLocation;
+        
+        SELECT `itemName` 
+        FROM tblTileItem
+        WHERE ((`mapName` = pMap) AND (`xLocation` = lcXLocation) AND (`yLocation` = lcYLocation))
         INTO lcItem;
     IF (lcItem is NULL)
     THEN
@@ -932,16 +1056,19 @@ BEGIN
         END;
     ELSE
         BEGIN
+            SELECT `maxDurability` FROM tblItem WHERE `itemName` = lcItem INTO lcItemDurability;
             INSERT INTO tblCharacterItem
-            VALUES (pCharacterName, lcItem, 1);
+            VALUES (pCharacterName, lcItem, 1, lcItemDurability);
             DELETE FROM tblTileItem
-            WHERE (`mapName` = pMap) AND (`xLocation` = pXLocation) AND (`yLocation` = pYLocation) AND (`itemName` = lcItem);
-            SELECT CONCAT(pCharacterName, " has picked up", lcItem) AS MESSAGE;
+            WHERE (`mapName` = pMap) AND (`xLocation` = lcXLocation) AND (`yLocation` = lcYLocation) AND (`itemName` = lcItem);
+            SELECT CONCAT(pCharacterName, " has picked up ", lcItem) AS MESSAGE;
         END;
     END IF;
     COMMIT;
 END//
 DELIMITER ;
+
+call characterPicksUpItem("MarkCharacter", "3 by 3")
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character Uses Item on Mine
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1061,23 +1188,38 @@ DELIMITER ;
 -- Admin selects game to end after
 
 
-DROP PROCEDURE IF EXISTS getActiveGames;
 DELIMITER //
+DROP PROCEDURE IF EXISTS getActiveGames//
 CREATE PROCEDURE getActiveGames()
 BEGIN
     START TRANSACTION;
-        SELECT t1.characterName, t1.mapName, t2.characterName
-        FROM tblCharacterMap AS t1, tblCharacterMap AS t2
-        WHERE ((t1.charactername <> t2.CharacterName) AND (t1.mapName = t2.mapName));
+        SELECT characterName, mapName
+        FROM tblCharacterMap;
+        -- SELECT t1.characterName, t1.mapName, t2.characterName
+        -- FROM tblCharacterMap AS t1, tblCharacterMap AS t2
+        -- WHERE ((t1.charactername <> t2.CharacterName) AND (t1.mapName = t2.mapName));
     COMMIT;
 END//
 DELIMITER ; -- Doesn't yet work TODO
 
+call getActiveGames();
+
+SELECT * FROM tblCharacterMap;
+
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminKillGame//
-CREATE PROCEDURE adminKillGame(pUserName VARCHAR(32)) 
+CREATE PROCEDURE adminKillGame(pMapName VARCHAR(16)) 
 BEGIN
--- TODO
+    Start TRANSACTION;
+        DELETE FROM tblCharacterMap -- don't delete the tblMap through out the whole thing
+        WHERE `mapName` = pMapName;
+        DELETE FROM tblCharacterTile
+        WHERE `mapName` = pMapName;
+        DELETE FROM tblMineTile
+        WHERE `mapName` = pMapName;
+        DELETE FROM tblTileItem
+        WHERE `mapName` = pMapName;
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -1124,7 +1266,7 @@ START TRANSACTION;
         BEGIN
             SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
         END;
-    ELSE IF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
+    ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
     THEN
         BEGIN
             SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
@@ -1133,7 +1275,6 @@ START TRANSACTION;
         UPDATE tblUser
         SET `email` = username, pNewUserName = pNewUserEmail, `userPassword` = pNewUserPassword, `loginAttempts` = pLoginAttempts, `userScore` = pUserScore
         WHERE pUserName = `username`;
-    END IF;
     END IF;
 COMMIT;   
 END//
@@ -1161,7 +1302,7 @@ START TRANSACTION;
 	DELETE FROM tblUser 
     WHERE `username` = pUserName;
 
-	SELECT "User is now Deleted" AS MESSAGE;
+	SELECT CONCAT(pUserName, " is now Deleted") AS MESSAGE;
 COMMIT;  
 END//
 DELIMITER ;
