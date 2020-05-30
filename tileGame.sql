@@ -134,6 +134,7 @@ CREATE PROCEDURE makeTileGameDB()
             `mapName` VARCHAR(16) NOT NULL,
             `xLocation` INTEGER NOT NULL,
             `yLocation` INTEGER NOT NULL,
+            `isPlaying` BOOLEAN NOT NULL,
             PRIMARY KEY (`characterName`, `mapName`, `xLocation`, `yLocation`),
             FOREIGN KEY (`characterName`) REFERENCES tblCharacter (`characterName`) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY (`mapName`, `xLocation`, `yLocation`) REFERENCES tblTile (`mapName`, `xLocation`, `yLocation`)
@@ -298,13 +299,13 @@ Values
 ('Anvil', "5 by 5", 4, 1),
 ('Gem',	 "5 by 5", 2, 5);
 
-INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`)
+INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`, `isPlaying`)
 Values
-('MarkCharacter', "3 by 3", 2, 2),
-('MaryCharacter', "3 by 3", 2, 2),
-('JohnCharacter', "5 by 5", 3, 3),
-('StepehnCharacter', "5 by 5", 3, 3),
-('MichaelCharacter', "5 by 5", 3, 3);
+('MarkCharacter', "3 by 3", 2, 2, 1),
+('MaryCharacter', "3 by 3", 2, 2, 1),
+('JohnCharacter', "5 by 5", 3, 3, 0),
+('StepehnCharacter', "5 by 5", 3, 3, 1),
+('MichaelCharacter', "5 by 5", 3, 3, 0);
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- UPDATE Statements
@@ -740,8 +741,8 @@ BEGIN
                 VALUES(pCharacter1, pMap), (pCharacter2, pMap);
                 DELETE FROM tblCharacterTile 
 				WHERE `characterName` = pCharacter1 AND `characterName` = pCharacter2; -- feel hacky, ensures that characters are no longer playing any other games
-                INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`)
-                VALUES (pCharacter1, pMap, lcXHome, lcYHome), (pCharacter2, pMap, lcXHome, lcYHome);
+                INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`, `isPlaying`)
+                VALUES (pCharacter1, pMap, lcXHome, lcYHome, 1), (pCharacter2, pMap, lcXHome, lcYHome, 1);
                 BEGIN
                 spawnItem: LOOP
                     IF (i < lcXMax) THEN -- using X map size arbitarily to not spawn that many items for a certian map size
@@ -833,6 +834,9 @@ BEGIN
 START TRANSACTION;
     DELETE FROM tblCharacterMap
     WHERE `characterName` = pCharacterName AND `mapName` = pMap;
+    UPDATE tblCharacterTile
+    SET `isPlaying` = 0
+    WHERE `characterName` = pCharacterName;
     SELECT CONCAT(pcharacterName, " has left the game but can rejoin") AS MESSAGE;
 COMMIT;
 END//
@@ -867,9 +871,7 @@ BEGIN
     START TRANSACTION; 
         SELECT `mapName` 
         FROM tblCharacterTile 
-        WHERE ((`characterName` = pCharacterName) AND (`mapName` NOT IN (SELECT `mapName`
-                       FROM tblCharacterMap 
-                       WHERE `characterName` = pCharacterName)));
+        WHERE ((`characterName` = pCharacterName) AND (`isPlaying` = 0));
     COMMIT;
 END//
 
@@ -908,6 +910,8 @@ DECLARE lcHomeY INTEGER;
                 WHERE ((`characterName`<> pCharacterName) AND
                 (`mapName` = pMap) AND
                 (`xLocation` = lcCharacterX) AND
+                (`xLocation` <> lcHomeX) AND
+                (`yLocation` <> lcHomeY) AND -- check if on home tile
                 (`yLocation` = lcCharacterY)))) THEN
                     BEGIN -- tile is occupied by another character , need to choose empty tile
                         IF(pDirection = NULL) THEN
@@ -931,12 +935,12 @@ DECLARE lcHomeY INTEGER;
                                     (lcCharacterX >= 1) AND (lcCharacterY >= 1)) THEN
                                     BEGIN
                                         INSERT INTO tblCharacterMap 
-                                        VALUES (pCharacterName, lcMap);
-                                        SELECT CONCAT(pCharacterName, " has rejoined ", pMap) AS MESSAGE; -- check if character x and y is inside coords of map
+                                        VALUES (pCharacterName, pMap, 0);
+                                        SELECT CONCAT(pCharacterName, " has rejoined ", pMap, ". Score reset") AS MESSAGE; -- check if character x and y is inside coords of map
                                     END;
                                 ELSE
                                     BEGIN
-                                        SELECT CONCAT(pDirection, " would put ", pCharacterName, " out of the map.Please choose another direction.") AS MESSAGE;
+                                        SELECT CONCAT(pDirection, " would put ", pCharacterName, " out of the map. Please choose another direction.") AS MESSAGE;
                                     END;
                                 END IF;
                             END;
@@ -945,8 +949,8 @@ DECLARE lcHomeY INTEGER;
             ELSE
                 BEGIN
                     INSERT INTO tblCharacterMap
-                    VALUES (pCharacterName, lcMap);
-                    SELECT CONCAT(pCharacterName, " has rejoined ", pMap) AS MESSAGE;
+                    VALUES (pCharacterName, pMap, 0);
+                    SELECT CONCAT(pCharacterName, " has rejoined ", pMap, ". Score reset") AS MESSAGE;
                 END;
             END IF;
         END;
@@ -954,140 +958,151 @@ DECLARE lcHomeY INTEGER;
     COMMIT;
 END//
 
-call characterReturnsToMap(); -- todo test
+call characterReturnToMap("steve", "13 by 13", "none"); -- todo test
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character makes Move
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS characterMakesMove//
 CREATE PROCEDURE characterMakesMove(pCharacterName VARCHAR(32), pDirection VARCHAR(5), pMapName VARCHAR(16)) 
 BEGIN
     START TRANSACTION;
-    IF (pDirection = "left") THEN
-        IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND 
-            (EXISTS (SELECT * 
-				FROM tblCharacterTile as CT
-				WHERE (
-                CT.characterName = pCharacterName AND
-                CT.mapName = pMapName AND
-                CT.xLocation - 1 >= 1))) AND
-            (NOT EXISTS (
-                SELECT * 
-                FROM tblCharacterTile c, tblCharacterTile t, tblMap q
-                WHERE 
-                (c.characterName = pCharacterName AND ( -- check if character exists, no character exists at new x and y and and map x and y are inside map boundary
-                c.xLocation - 1 = t.xLocation AND
-                c.yLocation = t.yLocation  AND
-                c.mapName = t.mapName AND
-                t.characterName <> c.characterName)))) THEN
-            BEGIN
-                UPDATE tblCharacter
-                SET `xPosition` = `xPosition` - 1
-                WHERE (characterName = pCharacterName);
-                UPDATE tblCharacterTile
-                SET `xLocation` = `xLocation` - 1
-                WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-                SELECT CONCAT(pCharacterName, ' Moved Left') AS MESSAGE, pCharacterName as characterName;
-            END; 
-        ELSE
-            SELECT 'Not able to move left' AS MESSAGE;
+    IF (EXISTS(SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName AND `mapName` = pMapName)) THEN
+        IF (pDirection = "left") THEN
+            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characteame = pCharacterName)) AND 
+                (EXISTS (SELECT * 
+                    FROM tblCharacterTile as CT
+                    WHERE (
+                    CT.characterName = pCharacterName AND
+                    CT.mapName = pMapName AND
+                    CT.xLocation - 1 >= 1))) AND
+                (NOT EXISTS (
+                    SELECT * 
+					FROM tblCharacterTile c, tblCharacterTile t
+                    WHERE 
+                    (c.characterName = pCharacterName AND -- check if character exists, no character exists at new x and y and and map x and y are inside map boundary
+                    c.xLocation - 1 = t.xLocation AND
+                    c.yLocation = t.yLocation  AND
+                    c.mapName = t.mapName AND
+                    c.isPlaying = 1 AND t.isPlaying = 1 AND
+                    t.characterName <> c.characterName))) THEN
+                BEGIN
+                    UPDATE tblCharacter
+                    SET `xPosition` = `xPosition` - 1
+                    WHERE (characterName = pCharacterName);
+                    UPDATE tblCharacterTile
+                    SET `xLocation` = `xLocation` - 1
+                    WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
+                    SELECT CONCAT(pCharacterName, ' moved Left') AS MESSAGE, pCharacterName as characterName;
+                END; 
+            ELSE
+                SELECT 'Not able to move left' AS MESSAGE;
+            END IF;
+        ELSEIF (pDirection = "right") THEN
+            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND
+                (EXISTS (SELECT * 
+                    FROM tblCharacterTile as CT
+                    WHERE (
+                    CT.characterName = pCharacterName AND
+                    CT.mapName = pMapName AND
+                    CT.xLocation + 1 <= (SELECT xSize FROM tblMap WHERE mapName = pMapName)))) AND
+                (NOT EXISTS (
+                    SELECT * 
+                    FROM tblCharacterTile c, tblCharacterTile t, tblMap q
+                    WHERE 
+                    (c.characterName = pCharacterName AND 
+                    c.xLocation + 1 = t.xLocation AND
+                    c.yLocation = t.yLocation  AND
+                    c.mapName = t.mapName AND
+                    c.isPlaying = 1 AND t.isPlaying = 1 AND
+                    t.characterName <> c.characterName))) THEN 
+                    BEGIN
+                        UPDATE tblCharacter
+                        SET `xPosition` = `xPosition` + 1
+                        WHERE (characterName = pCharacterName);
+                        UPDATE tblCharacterTile
+                        SET `xLocation` = `xLocation` + 1
+                        WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
+                        SELECT CONCAT(pCharacterName, ' moved right') AS MESSAGE, pCharacterName as characterName;
+                    END; 
+            ELSE
+                BEGIN
+                    SELECT 'Not able to move right' AS MESSAGE;
+                END; 	
+            END IF;
+        ELSEIF (pDirection = "up") THEN
+            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND 
+                (EXISTS (SELECT * 
+                    FROM tblCharacterTile as CT
+                    WHERE (
+                    CT.characterName = pCharacterName AND
+                    CT.mapName = pMapName AND
+                    CT.yLocation - 1 >= 1 ))) AND
+                (NOT EXISTS (
+                    SELECT * 
+                    FROM tblCharacterTile c, tblCharacterTile t
+                    WHERE 
+                    (c.characterName = pCharacterName IN (SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName AND `mapName` = pMapName) AND
+                    (c.xLocation = t.xLocation AND c.yLocation - 1 = t.yLocation  AND c.isPlaying = 1 AND t.isPlaying = 1 AND
+                    c.mapName = t.mapName AND t.characterName <> c.characterName)))) THEN
+                BEGIN
+                    UPDATE tblCharacter
+                    SET `yPosition` = `yPosition` - 1
+                    WHERE (characterName = pCharacterName);
+                    UPDATE tblCharacterTile
+                    SET `yLocation` = `yLocation` - 1
+                    WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
+                    
+                    SELECT CONCAT(pCharacterName, ' moved up') AS MESSAGE, pCharacterName as characterName; -- do i need to pass back the character name??
+                END; 
+            ELSE
+                SELECT 'Not able to move up' AS MESSAGE;
+            END IF;
+        ELSEIF (pDirection = "down") THEN
+        
+            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName) AND 
+                (EXISTS (SELECT * 
+                    FROM tblCharacterTile as CT
+                    WHERE (
+                    CT.characterName = pCharacterName AND
+                    CT.mapName = pMapName AND
+                    CT.yLocation + 1 <= (SELECT ySize FROM tblMap WHERE mapName = pMapName)))) AND
+                (NOT EXISTS 
+                -- (SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName AND `mapName` = pMapName)
+                    (SELECT * 
+					FROM tblCharacterTile c, tblCharacterTile t
+                    WHERE 
+                    (c.characterName = pCharacterName) AND 
+                    (c.xLocation = t.xLocation AND c.yLocation + 1 = t.yLocation) AND c.isPlaying = 1 AND t.isPlaying = 1 AND
+                    (c.mapName = t.mapName AND c.characterName <> t.characterName)))) -- map max y-size
+                THEN
+                BEGIN
+                    UPDATE tblCharacter
+                    SET `yPosition` = `yPosition` + 1
+                    WHERE (characterName = pCharacterName);
+                    UPDATE tblCharacterTile
+                    SET `yLocation` = `yLocation` + 1
+                    WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);               
+                    SELECT CONCAT(pCharacterName, ' moved down') AS MESSAGE, pCharacterName as characterName;
+                END; 
+            ELSE
+                SELECT 'Not able to move down' AS MESSAGE;
+            END IF;
         END IF;
-    ELSEIF (pDirection = "right") THEN
-        IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND
-            (EXISTS (SELECT * 
-				FROM tblCharacterTile as CT
-				WHERE (
-                CT.characterName = pCharacterName AND
-                CT.mapName = pMapName AND
-                CT.xLocation + 1 <= (SELECT xSize FROM tblMap WHERE mapName = pMapName)))) AND
-            (NOT EXISTS (
-                SELECT * 
-                FROM tblCharacterTile c, tblCharacterTile t, tblMap q
-                WHERE 
-                (c.characterName = pCharacterName AND (
-                c.xLocation + 1 = t.xLocation AND
-                c.yLocation = t.yLocation  AND
-                c.mapName = t.mapName AND
-                t.characterName <> c.characterName)))) THEN 
-				BEGIN
-					UPDATE tblCharacter
-					SET `xPosition` = `xPosition` + 1
-					WHERE (characterName = pCharacterName);
-					UPDATE tblCharacterTile
-					SET `xLocation` = `xLocation` + 1
-					WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-					SELECT CONCAT(pCharacterName, ' Moved right') AS MESSAGE, pCharacterName as characterName;
-				END; 
-        ELSE
-			BEGIN
-				SELECT 'Not able to move right' AS MESSAGE;
-			END; 	
-        END IF;
-    ELSEIF (pDirection = "up") THEN
-        IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND 
-            (EXISTS (SELECT * 
-				FROM tblCharacterTile as CT
-				WHERE (
-                CT.characterName = pCharacterName AND
-                CT.mapName = pMapName AND
-                CT.yLocation - 1 >= 1 ))) AND
-            (NOT EXISTS (
-                SELECT * 
-                FROM tblCharacterTile c, tblCharacterTile t
-                WHERE 
-                (c.characterName = pCharacterName AND 
-                (c.xLocation = t.xLocation AND c.yLocation - 1 = t.yLocation  AND
-                c.mapName = t.mapName AND t.characterName <> c.characterName)))) THEN
-            BEGIN
-                UPDATE tblCharacter
-                SET `yPosition` = `yPosition` - 1
-                WHERE (characterName = pCharacterName);
-                UPDATE tblCharacterTile
-                SET `yLocation` = `yLocation` - 1
-                WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-                
-                SELECT CONCAT(pCharacterName, ' Moved up') AS MESSAGE, pCharacterName as characterName; -- do i need to pass back the character name??
-            END; 
-        ELSE
-            SELECT 'Not able to move up' AS MESSAGE;
-        END IF;
-    ELSEIF (pDirection = "down") THEN
-        IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName) AND 
-			(EXISTS (SELECT * 
-				FROM tblCharacterTile as CT
-				WHERE (
-                CT.characterName = pCharacterName AND
-                CT.mapName = pMapName AND
-                CT.yLocation + 1 <= (SELECT ySize FROM tblMap WHERE mapName = pMapName)))) AND
-			(NOT EXISTS 
-				(SELECT * 
-				FROM tblCharacterTile c, tblCharacterTile t
-				WHERE 
-                (c.characterName = pCharacterName AND 
-				(c.xLocation = t.xLocation AND c.yLocation + 1 = t.yLocation AND 
-				c.mapName = t.mapName AND t.characterName <> c.characterName))))) -- map max y-size
-            THEN
-            BEGIN
-                UPDATE tblCharacter
-                SET `yPosition` = `yPosition` + 1
-                WHERE (characterName = pCharacterName);
-                UPDATE tblCharacterTile
-                SET `yLocation` = `yLocation` + 1
-                WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);               
-                SELECT CONCAT(pCharacterName, ' Moved down') AS MESSAGE, pCharacterName as characterName;
-            END; 
-        ELSE
-            SELECT 'Not able to move down' AS MESSAGE;
-        END IF;
+    ELSE
+        BEGIN
+            SELECT CONCAT(pCharacterName, " isn't playing ", pMapName) AS MESSAGE;
+        END;
     END IF;
     COMMIT;
 END//
 DELIMITER ;
 
-call characterMakesMove("MarkCharacter", "left", "3 by 3");
+call characterMakesMove("steve", "right", "13 by 13");
+call characterMakesMove("stever", "down", "13 by 13");
 
-SELECT * FROM tblCharacterTile WHERE `characterName` = "MarkCharacter";
+SELECT * FROM tblCharacterTile WHERE `characterName` = "steve";
+SELECT * FROM tblCharacterTile WHERE `characterName` = "stever";
 SELECT * FROM tblCharacterTile WHERE `mapName` = "3 by 3";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character picks up item
@@ -1205,7 +1220,7 @@ BEGIN
 				END;
 			ELSE
 				BEGIN
-					SELECT CONCAT(pItemName, "doesn't mine", lcMine) AS MESSAGE;
+					SELECT CONCAT(pItemName, " doesn't mine", lcMine) AS MESSAGE;
 				END;
 			END IF;
 		END;
@@ -1252,20 +1267,12 @@ DROP PROCEDURE IF EXISTS getActiveGames//
 CREATE PROCEDURE getActiveGames()
 BEGIN
     START TRANSACTION;
-        SELECT characterName AS CM1, mapName AS CM1, characterName AS CM2
-        FROM tblCharacterMap as CM1, tblCharacterMap as CM2
-        WHERE CM1.characterName <> CM2.characterName AND
-        CM1.mapName = CM2.mapName;
-        -- SELECT t1.characterName, t1.mapName, t2.characterName
-        -- FROM tblCharacterMap AS t1, tblCharacterMap AS t2
-        -- WHERE ((t1.charactername <> t2.CharacterName) AND (t1.mapName = t2.mapName));
+		SELECT `mapName` FROM tblCharacterMap GROUP BY `mapName`;
     COMMIT;
 END//
-DELIMITER ; -- Doesn't yet work TODO
+DELIMITER ;
 
 call getActiveGames();
-
-SELECT * FROM tblCharacterMap;
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminKillGame//
@@ -1285,7 +1292,6 @@ END//
 DELIMITER ;
 
 call getActiveGames();
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin adds a user
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1307,8 +1313,7 @@ START TRANSACTION;
             BEGIN
                 INSERT INTO tblUser(`username` , `email`, `userPassword`, `isAdmin`)
                 VALUES (pUserName, pEmail, pUserPassword, pIsAdmin);
-
-                SELECT 'User has been registered' AS MESSAGE;
+                SELECT CONCAT(pUserName, " has been registered")  AS MESSAGE;
             END;
         END IF;
     ELSE
@@ -1348,7 +1353,7 @@ START TRANSACTION;
         END;
     ELSE
         BEGIN
-            SELCT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+            SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
         END;
     END IF;
 COMMIT;   
@@ -1358,25 +1363,22 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin deletes user
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Get all users
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminGetAllUsers//
-CREATE PROCEDURE adminGetAllUsers(pAdminUserName)
-    START TRANSACTION;
-        BEGIN
-            IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
-                BEGIN
-                    SELECT `username`
-                    FROM tblUser;
-                END;
-            ELSE
-                BEGIN
-                    SELCT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
-                END;
-            END IF;
-        END;
-    COMMIT;
+CREATE PROCEDURE adminGetAllUsers(pAdminUserName VARCHAR(32))
+BEGIN
+START TRANSACTION;
+	IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+		BEGIN
+			SELECT `username`
+			FROM tblUser;
+		END;
+	ELSE
+		BEGIN
+			SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+		END;
+	END IF;
+COMMIT;
 END//
 DELIMITER ;
 
@@ -1384,28 +1386,34 @@ DELIMITER ;
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminDeleteUser//
 CREATE PROCEDURE adminDeleteUser(pUserName VARCHAR(32))
-    START TRANSACTION;
+BEGIN
+START TRANSACTION;
+	IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
         DELETE FROM tblUser 
         WHERE `username` = pUserName;
-
         SELECT CONCAT(pUserName, " is now Deleted") AS MESSAGE;
-    COMMIT;
+	ELSE
+		BEGIN
+			SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+		END;
+	END IF;
+COMMIT;
 END//
 DELIMITER ;
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin unlocks locked user
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 -- Get list of locked users
 DELIMITER //
 DROP PROCEDURE IF EXISTS getLockedUsers//
 CREATE PROCEDURE getLockedUsers() 
 BEGIN
-    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
-        SELECT `username`
-        FROM tblUser
-        WHERE `isLocked` = true;
+START TRANSACTION;
+	SELECT `username`
+	FROM tblUser
+	WHERE `isLocked` = true;
+COMMIT;
 END//
 DELIMITER ;
 
@@ -1414,12 +1422,12 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS adminUnlockUser//
 CREATE PROCEDURE adminUnlockUser(pUserName VARCHAR(32)) 
 BEGIN
+START TRANSACTION;
     IF EXISTS (SELECT * FROM tblUser WHERE `userName` = pUserName) THEN
         BEGIN
-            UPDATE tblUser
+            UPDATE tblUser 
             SET `isLocked` = false, `loginAttempts` = 0
             WHERE `username` = pUserName;
-
             SELECT CONCAT(pUserName, " has been unlocked") as Message;
         END;
     ELSE
@@ -1427,5 +1435,6 @@ BEGIN
             SELECT CONCAT("The user ", pUserName, " doesn't exist") AS MESSAGE;
         END;
     END IF;
+COMMIT;
 END//
 DELIMITER ;
