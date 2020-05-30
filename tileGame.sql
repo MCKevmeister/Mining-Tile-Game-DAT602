@@ -884,9 +884,9 @@ DECLARE lcCharacterY INTEGER;
 DECLARE lcHomeX INTEGER;
 DECLARE lcHomeY INTEGER;
     START TRANSACTION;
-    SELECT 
+    SELECT `homeTileXLocation`, `homeTileYLocation`
     FROM tblMap
-    WHERE 
+    WHERE `mapName` = pMap
     INTO lcHomeX, lcHomeY;
     SELECT `xLocation`, `yLocation`
     FROM tblCharacterTile
