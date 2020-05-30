@@ -432,7 +432,6 @@ SELECT * FROM tblCharacterTile;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Register a User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DROP PROCEDURE IF EXISTS registerUser;
 DELIMITER //
 CREATE PROCEDURE registerUser(pUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64))
@@ -454,13 +453,10 @@ DELIMITER ;
 
 CALL registerUser("steve", "steve", "steve");
 call registeruser("foo", "foo", "foo");
-
 SELECT * FROM tbluser;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Login with a user  
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DROP PROCEDURE IF EXISTS userLogin;
 DELIMITER //
 CREATE PROCEDURE userLogin(pUserName VARCHAR(32), pUserPassword VARCHAR(64))
@@ -510,11 +506,9 @@ DELIMITER ;
 
 call userLogin("steve", "steve");
 SELECT * FROM tblUser;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Edit User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS editUser//
 CREATE PROCEDURE editUser(pUserName VARCHAR(32), pNewUserName VARCHAR(32), pNewUserPassword VARCHAR(64), pNewUserEmail VARCHAR(64))
@@ -546,11 +540,9 @@ END//
 DELIMITER ;
 
 call editUser("steve", "foo", "foo", "foo");
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Delete User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS deleteUser//
 CREATE PROCEDURE deleteUser(pUserName VARCHAR(32))
@@ -571,7 +563,6 @@ call deleteUser("foo");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Creates Character (inlcuding character skills created) WORKING
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS createCharacter//
 CREATE PROCEDURE createCharacter(pUserName VARCHAR(32), pCharacterName VARCHAR(32), pSkill1 VARCHAR(20), pSkill2 VARCHAR(20), pSkill3 VARCHAR(20), pSkill4 VARCHAR(20))
@@ -602,7 +593,6 @@ call createCharacter("steve", "steve", "Miner","Gatherer","Fisher","Woodcutter")
 -- User Deletes Character
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Return all characters a user has. Also used in select character to play game
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS getAllUserCharacters//
 CREATE PROCEDURE getAllUserCharacters(pUserName VARCHAR(32))
@@ -638,12 +628,9 @@ END//
 DELIMITER ;
 
 call deleteCharacter("stever", "steve");
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Select Character to play game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- user selects character to play with
 DELIMITER //
 DROP PROCEDURE IF EXISTS selectCharacter//
 CREATE PROCEDURE selectCharacter(pCharacterName VARCHAR(32), pUserName VARCHAR(32))
@@ -667,11 +654,9 @@ DELIMITER ;
 
 call selectCharacter("steve", "steve"); 
 SELECT * FROM tblCharacter;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Display a list of online characters
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS onlineCharacters//
 CREATE PROCEDURE onlineCharacters()
@@ -688,10 +673,6 @@ call onlineCharacters();
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Create Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Returns list of maps
--- User chooses from list of maps to play in C# app
--- set character location to home tile of map
 DELIMITER //
 DROP PROCEDURE IF EXISTS getMaps//
 CREATE PROCEDURE getMaps()
@@ -737,7 +718,7 @@ BEGIN
     DECLARE itemCount INTEGER;
     DECLARE mineSpawn INTEGER;
     DECLARE mineSpawnName VARCHAR(32);
-    START TRANSACTION;
+    START TRANSACTION; 
 		SELECT COUNT(`itemName`) FROM tblItem INTO itemCount;
         SELECT `homeTileXLocation`, `homeTileYLocation`
         FROM tblMap
@@ -747,13 +728,18 @@ BEGIN
         FROM tblMap
         WHERE `mapName` = pMap
         INTO lcXMax, lcYMax;
-        IF NOT EXISTS (SELECT * FROM tbl) -- a game being played characters already
-        IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter1) AND 
+        IF (EXISTS(SELECT * FROM tblcharacterMap WHERE `characterName` = pCharacter1) OR (EXISTS(SELECT * FROM tblcharacterMap WHERE `characterName` = pCharacter2))) THEN
+			BEGIN
+				SELECT "Cannot make game, characters are already playing" AS MESSAGE; -- if character already playing a gamealready plaing a game
+			END;
+        ELSEIF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter1) AND 
 			EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter2 AND `isActive` = 1) AND 
 			EXISTS (SELECT * FROM tblMap WHERE `mapname` = pMap)) THEN
             BEGIN
                 INSERT INTO tblCharacterMap (`characterName`, `mapName`)
                 VALUES(pCharacter1, pMap), (pCharacter2, pMap);
+                DELETE FROM tblCharacterTile 
+				WHERE `characterName` = pCharacter1 AND `characterName` = pCharacter2; -- feel hacky, ensures that characters are no longer playing any other games
                 INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`)
                 VALUES (pCharacter1, pMap, lcXHome, lcYHome), (pCharacter2, pMap, lcXHome, lcYHome);
                 BEGIN
@@ -793,7 +779,6 @@ BEGIN
                                 WHEN 5 THEN SET mineSpawnName = 'Target'; 
                                 WHEN 6 THEN SET mineSpawnName = 'Anvil';
                             END CASE;
-
 							INSERT INTO tblTileItem (`mapName`, `xLocation`, `yLocation`, `mineName`) 
                             VALUES (pMap, xSpawn, ySpawn, mineSpawn);
 							SET i = i + 1;
@@ -840,8 +825,7 @@ END//
 DELIMITER ;
 
 Call getCharactersMaps("steve");
-
--- Delete from tlbCharacterMap
+-- Leave game but can rejoin game later
 DELIMITER //
 DROP PROCEDURE IF EXISTS leaveCharacterMap//
 CREATE PROCEDURE leaveCharacterMap(pCharacterName VARCHAR(32), pMap VARCHAR(16))
@@ -849,39 +833,61 @@ BEGIN
 START TRANSACTION;
     DELETE FROM tblCharacterMap
     WHERE `characterName` = pCharacterName AND `mapName` = pMap;
-    SELECT CONCAT(pcharacterName, " has left the game") AS MESSAGE;
+    SELECT CONCAT(pcharacterName, " has left the game but can rejoin") AS MESSAGE;
 COMMIT;
 END//
 DELIMITER ;
 
-call leaveCharacterMap("stever", "13 by 13");
-SELECT * FROM tblCharacterTile WHERE `characterName` = "stever";
-SELECT * FROM tblCharactermap WHERE `characterName` = "stever";
+call leaveCharacterMap("steve", "13 by 13");
+
+SELECT * FROM tblCharacterTile WHERE `characterName` = "steve";
+SELECT * FROM tblCharactermap WHERE `characterName` = "steve";
+
+-- leave game and cannot rejoin
+DELIMITER //
+DROP PROCEDURE IF EXISTS endCharacterGame//
+CREATE PROCEDURE endCharacterGame(pCharacterName VARCHAR(32), pMap VARCHAR(16))
+BEGIN
+START TRANSACTION;
+    DELETE FROM tblCharacterTile
+    WHERE `characterName` = pCharacterName AND `mapName` = pMap;
+	DELETE FROM tblCharacterMap
+    WHERE `characterName` = pCharacterName AND `mapName` = pMap;
+    SELECT CONCAT(pcharacterName, " has left the game") AS MESSAGE;
+COMMIT;
+END//
+DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Return to Game in Progress
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
-DROP PROCEDURE IF EXISTS getMapsCharacterHasLeft//
-CREATE PROCEDURE getMapsCharacterHasLeft(pCharacterName VARCHAR(32))
+DROP PROCEDURE IF EXISTS getMapsCharacterCanRejoin//
+CREATE PROCEDURE getMapsCharacterCanRejoin(pCharacterName VARCHAR(32))
 BEGIN
     START TRANSACTION; 
-        SELECT * 
-        FROM tblCharacterMap 
+        SELECT `mapName` 
+        FROM tblCharacterTile 
         WHERE ((`characterName` = pCharacterName) AND (`mapName` NOT IN (SELECT `mapName`
-                        FROM tblCharacterTile 
-                        WHERE `characterName` = pCharacterName)));
+                       FROM tblCharacterMap 
+                       WHERE `characterName` = pCharacterName)));
     COMMIT;
 END//
 
-call getMapsCharacterhasLeft("steve");
+call getMapsCharacterCanRejoin("steve");
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS characterReturnToMap//
-CREATE PROCEDURE characterReturnToMap(pCharacterName VARCHAR(32), pMap VARCHAR(16), pDirection VARCHAR(16) = NULL)
+CREATE PROCEDURE characterReturnToMap(pCharacterName VARCHAR(32), pMap VARCHAR(16), pDirection VARCHAR(16))
+BEGIN
 DECLARE lcCharacterX INTEGER;
 DECLARE lcCharacterY INTEGER;
-BEGIN
-    START TRANSACTION;  -- check if tile is empty
+DECLARE lcHomeX INTEGER;
+DECLARE lcHomeY INTEGER;
+    START TRANSACTION;
+    SELECT 
+    FROM tblMap
+    WHERE 
+    INTO lcHomeX, lcHomeY;
     SELECT `xLocation`, `yLocation`
     FROM tblCharacterTile
     WHERE `characterName` = pCharacterName AND
@@ -902,7 +908,7 @@ BEGIN
                 WHERE ((`characterName`<> pCharacterName) AND
                 (`mapName` = pMap) AND
                 (`xLocation` = lcCharacterX) AND
-                (`yLocation` = lcCharacterY)) THEN
+                (`yLocation` = lcCharacterY)))) THEN
                     BEGIN -- tile is occupied by another character , need to choose empty tile
                         IF(pDirection = NULL) THEN
                             BEGIN
@@ -930,7 +936,7 @@ BEGIN
                                     END;
                                 ELSE
                                     BEGIN
-                                        SELECT CONCAT(pDirection, " would put ", pCharacterName, " out of the map.Please choose another direction.")
+                                        SELECT CONCAT(pDirection, " would put ", pCharacterName, " out of the map.Please choose another direction.") AS MESSAGE;
                                     END;
                                 END IF;
                             END;
@@ -941,7 +947,7 @@ BEGIN
                     INSERT INTO tblCharacterMap
                     VALUES (pCharacterName, lcMap);
                     SELECT CONCAT(pCharacterName, " has rejoined ", pMap) AS MESSAGE;
-                END
+                END;
             END IF;
         END;
     END IF;
