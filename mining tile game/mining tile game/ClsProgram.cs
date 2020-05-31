@@ -71,9 +71,8 @@ namespace miningTileGame
         {
             //string currentUser = ClsTest.getUserName().ToString();
             Console.WriteLine("The current User is" + ClsTest.getUserName().ToString());
-            string userMenuText = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~User Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-                "n 1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Main Menu\n7) Exit Program";
-            Console.WriteLine(userMenuText);
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~User Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
+                "n 1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Admin Menu\n7) Main Menu\n8) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
@@ -135,8 +134,8 @@ namespace miningTileGame
                                 skills[i] = "Smith";
                                 break;
                         }
-                    } // not sure if this will work as I expect will test later
-  
+                    } // not sure if this will work as I expect will test later TODO
+
                     DataSet createCharacter = ClsTest.createCharacter(characterName, skills[0], skills[1], skills[3], skills[4]);
                     foreach (DataRow aRow in createCharacter.Tables[0].Rows)
                     {
@@ -160,17 +159,38 @@ namespace miningTileGame
 
                 case "5": //Select Character to play game
                     Console.WriteLine("These are you current Characters");
-                    ClsTest.getAllUserCharacters();
+                    DataSet currentCharacters = ClsTest.getAllUserCharacters();
+                    foreach (DataRow aRow in currentCharacters.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["userName"]);
+                    }
                     Console.WriteLine("What character do you want to play with?");
-                    // check if character exits? TODO
-                   characterMenu();
+                    string characterChoice = Console.ReadLine();
+                    _ = ClsTest.selectCharacter(characterChoice); // DataSet characterChoose =
+                    string characterNameCheck = ClsTest.getCharacterName().ToString();
+                    if (characterNameCheck != null)
+                    {
+                        characterMenu();
+                    }
+                    else
+                    {
+                        foreach (DataRow aRow in currentCharacters.Tables[0].Rows)
+                        {
+                            Console.WriteLine(aRow["Message"]);
+                            userMenu();
+                        }
+                    }
                     break;
 
-                case "6": //Main Menu
+                case "6": //Admin Menu
+                    adminMenu();
+                    break;
+
+                case "7": //Main Menu
                     menu();
                     break;
 
-                case "7": //Exit Program
+                case "8": // Exit Program
                     Environment.Exit(0);
                     break;
 
@@ -183,13 +203,55 @@ namespace miningTileGame
         {
             Console.WriteLine("The current Character is" + ClsTest.getCharacterName().ToString());
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Character Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-            "1) Create Game\n2) Character Chats\n3)User Menu\n4)  Return to Game in Progress\n5) Main Menu\n6) Exit Program");
+            "1) Create Game\n2) Character Chats\n3) Return to Game in Progress\n4)  User Menu\n5) Main Menu\n6) Exit Program");
+            var response = Console.ReadLine();
+            switch (response)
+            {
+                case "1": // Create Game
+                    break;
+
+                case "2": // Character Chats
+                    break;
+
+                case "3": //Return to Game in Progress
+                    gameMenu();
+                    break;
+
+                case "4": //User Menu
+                    break;
+
+                case "5": // Main Menu
+                    break;
+
+                case "6": // Exit Program
+                    break;
+            }
         }
         private static void gameMenu()
         {
-            string gameMenuText = ""; //1) Leave Game\n12) Game Generates Items\n13) Game Generates Mines\n14) Return to Game in Progress\n15) Character makes Move\n" +
-            //"16) Character picks up item\n17) Player Uses Item on Mine\n
-            Console.Write(gameMenuText);
+            Console.Write("1) Leave Game\n2) Character makes Move\n3) Character picks up item\n4) Player Uses Item on Mine\n5)Leave Game\n6)Exit Game 7)Exit Program");
+            var response = Console.ReadLine();
+            switch (response)
+            {
+                case "1": // Leave Game
+                    break;
+
+                case "2": // Character Chats
+                    break;
+
+                case "3": //Return to Game in Progress
+                    gameMenu();
+                    break;
+
+                case "4": //User Menu -- redo /update
+                    break;
+
+                case "5": // Main Menu
+                    break;
+
+                case "6": // Exit Program
+                    break;
+            }
         }
         private static void adminMenu()
         {
@@ -199,10 +261,10 @@ namespace miningTileGame
             switch (response)
             {
                 case "1": //Admin Kills Running Game
-                    //Get list of running games
-                    //Print
-                    //select game to "kill"
-                    //TODO  
+                            //Get list of running games
+                            //Print
+                            //select game to "kill"
+                            //TODO  
                     adminMenu();
                     break;
 
@@ -216,7 +278,7 @@ namespace miningTileGame
                     Console.WriteLine("Is this user an Admin?\n1)Yes\n2)No");
                     string adminResponse = Console.ReadLine().ToString();
                     bool registerAdmin;
-                    if ( adminResponse  == "1")
+                    if (adminResponse == "1")
                     {
                         registerAdmin = true;
                     }
@@ -234,7 +296,7 @@ namespace miningTileGame
                     break;
 
                 case "3": //Admin edits user
-                    //TODO
+                            //TODO
                     adminMenu();
                     break;
 
@@ -254,7 +316,7 @@ namespace miningTileGame
                     }
                     adminMenu();
                     break;
-                        
+
                 case "5": //Admin unlocks locked user
                     Console.WriteLine("~~~~List of All Locked Users~~~~");
                     DataSet lockedUsers = ClsTest.getLockedUsers();
@@ -276,5 +338,5 @@ namespace miningTileGame
                     break;
             }
         }
-    }
+     }
 }

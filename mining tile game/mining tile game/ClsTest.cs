@@ -17,6 +17,10 @@ namespace miningTileGame
         {
             return _userName;
         }
+        public static object getCharacterName()
+        {
+            return _characterName;
+        }
         public static string testConnection()
         {
             MySqlConnection testcon = new MySqlConnection(connection);
@@ -162,11 +166,18 @@ namespace miningTileGame
             paramCharacterName.Value = pCharacterName;
             ParamList.Add(paramCharacterName);
             var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL selectCharacter(@CharacterName)", ParamList.ToArray());
-            foreach (DataRow aRow in aDataSet.Tables[0].Rows)
+            try
             {
-                _characterName = (aRow["characterName"]); //Stores character as a local variable to be used by the character menu
+                foreach (DataRow aRow in aDataSet.Tables[0].Rows)
+                {
+                    _characterName = (aRow["characterName"]); //Stores character as a local variable to be used by the character menu
+                }
+                return aDataSet;
             }
-            return aDataSet;
+            catch
+            {
+                return aDataSet;
+            }
         }
         public static DataSet getAllUsers()
         {
