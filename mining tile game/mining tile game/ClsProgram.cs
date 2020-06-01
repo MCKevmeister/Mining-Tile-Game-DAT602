@@ -204,9 +204,13 @@ namespace miningTileGame
             switch (response)
             {
                 case "1": // Create Game
+                          // TODO
+                    gameMenu();
                     break;
 
                 case "2": // Character Chats
+                    // TODO
+                    characterMenu();
                     break;
 
                 case "3": //Return to Game in Progress
@@ -214,12 +218,15 @@ namespace miningTileGame
                     break;
 
                 case "4": //User Menu
+                    userMenu();
                     break;
 
                 case "5": // Main Menu
+                    menu();
                     break;
 
                 case "6": // Exit Program
+                    Environment.Exit(0);
                     break;
             }
         }
@@ -232,7 +239,7 @@ namespace miningTileGame
                 case "1": // Leave Game
                     break;
 
-                case "2": // Character Chats
+                case "2": // 
                     break;
 
                 case "3": //Return to Game in Progress
@@ -240,19 +247,22 @@ namespace miningTileGame
                     break;
 
                 case "4": //User Menu -- redo /update
+                    userMenu();
                     break;
 
                 case "5": // Main Menu
+                    menu();
                     break;
 
                 case "6": // Exit Program
+                    Environment.Exit(0);
                     break;
             }
         }
         private static void adminMenu()
         {
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Admin Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-                        "\n1) Admin Kills Running Game\n2) Admin adds a user\n3) Admin edits user\n4) Admin deletes user\n5) Admin unlocks locked user\n6) Return to main menu");
+                        "\n1) Admin Kills Running Game\n2) Admin adds a user\n3) Admin edits user\n4) Admin deletes user\n5) Admin unlocks locked user\n6) Return to main menu\n7) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
@@ -292,7 +302,7 @@ namespace miningTileGame
                     break;
 
                 case "3": //Admin edits user
-                            //TODO
+                    //TODO
                     adminMenu();
                     break;
 
@@ -331,6 +341,9 @@ namespace miningTileGame
                     break;
                 case "6":
                     menu();
+                    break;
+                case "7":
+                    Environment.Exit(0);
                     break;
             }
         }
