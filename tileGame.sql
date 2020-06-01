@@ -693,11 +693,11 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS chooseOpponent//
 CREATE PROCEDURE chooseOpponent(pCharacterName VARCHAR(32))
 BEGIN
-START TRANSACTION;
-    SELECT `characterName`
-    FROM tblCharacter
-    WHERE (`isActive` = 1 AND `characterName` <> pCharacterName);
-COMMIT;
+    START TRANSACTION;
+        SELECT `characterName`
+        FROM tblCharacter
+        WHERE (`isActive` = 1 AND `characterName` <> pCharacterName);
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -813,17 +813,18 @@ SELECT * FROM tblCharacterTile;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Return a list of games the character is currently in
 -- User makes a selection for game to leave
-DELIMITER //
-DROP PROCEDURE IF EXISTS getCharactersMaps//
-CREATE PROCEDURE getCharactersMaps(pCharacterName VARCHAR(32))
-BEGIN
-START TRANSACTION;
-    SELECT `mapName`
-    FROM tblCharacterMap
-    WHERE `characterName` = pCharacterName;
-COMMIT;
-END//
-DELIMITER ;
+-- DELIMITER //
+-- Already made in getCharacterMaps
+-- DROP PROCEDURE IF EXISTS getCharactersMaps//
+-- CREATE PROCEDURE getCharactersMaps(pCharacterName VARCHAR(32))
+-- BEGIN
+-- START TRANSACTION;
+--     SELECT `mapName`
+--     FROM tblCharacterMap
+--     WHERE `characterName` = pCharacterName;
+-- COMMIT;
+-- END//
+-- DELIMITER ;
 
 Call getCharactersMaps("steve");
 -- Leave game but can rejoin game later
@@ -831,14 +832,14 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS leaveCharacterMap//
 CREATE PROCEDURE leaveCharacterMap(pCharacterName VARCHAR(32), pMap VARCHAR(16))
 BEGIN
-START TRANSACTION;
-    DELETE FROM tblCharacterMap
-    WHERE `characterName` = pCharacterName AND `mapName` = pMap;
-    UPDATE tblCharacterTile
-    SET `isPlaying` = 0
-    WHERE `characterName` = pCharacterName;
-    SELECT CONCAT(pcharacterName, " has left the game but can rejoin") AS MESSAGE;
-COMMIT;
+    START TRANSACTION;
+        DELETE FROM tblCharacterMap
+        WHERE `characterName` = pCharacterName AND `mapName` = pMap;
+        UPDATE tblCharacterTile
+        SET `isPlaying` = 0
+        WHERE `characterName` = pCharacterName;
+        SELECT CONCAT(pcharacterName, " has left the game but can rejoin") AS MESSAGE;
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -852,13 +853,13 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS endCharacterGame//
 CREATE PROCEDURE endCharacterGame(pCharacterName VARCHAR(32), pMap VARCHAR(16))
 BEGIN
-START TRANSACTION;
-    DELETE FROM tblCharacterTile
-    WHERE `characterName` = pCharacterName AND `mapName` = pMap;
-	DELETE FROM tblCharacterMap
-    WHERE `characterName` = pCharacterName AND `mapName` = pMap;
-    SELECT CONCAT(pcharacterName, " has left the game") AS MESSAGE;
-COMMIT;
+    START TRANSACTION;
+        DELETE FROM tblCharacterTile
+        WHERE `characterName` = pCharacterName AND `mapName` = pMap;
+        DELETE FROM tblCharacterMap
+        WHERE `characterName` = pCharacterName AND `mapName` = pMap;
+        SELECT CONCAT(pcharacterName, " has left the game") AS MESSAGE;
+    COMMIT;
 END//
 DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1109,7 +1110,7 @@ SELECT * FROM tblCharacterTile WHERE `mapName` = "3 by 3";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS characterPicksUpItem//
-CREATE PROCEDURE characterPicksUpItem(pCharacterName VARCHAR(32), pMap VARCHAR(16)) -- , pXLocation INTEGER, pYLocation INTEGER) -- dont need to pass location, can retrieve from DB
+CREATE PROCEDURE   -- , pXLocation INTEGER, pYLocation INTEGER) -- dont need to pass location, can retrieve from DB
 BEGIN
     DECLARE lcItem VARCHAR(32);
     DECLARE lcXLocation INTEGER;
@@ -1189,41 +1190,47 @@ END//
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS useItem//
-CREATE PROCEDURE useItem(pCharacterName VARCHAR(32), pUserName VARCHAR(32), pItemName VARCHAR(32), pMap VARCHAR(16), pXLocation INTEGER, pYLocation INTEGER) 
+CREATE PROCEDURE useItem(pCharacterName VARCHAR(32), pUserName VARCHAR(32), pItemName VARCHAR(32), pMap VARCHAR(16)) 
 BEGIN
     DECLARE lcMine VARCHAR(20);
+    DECLARE lcX INTEGER;
+    DECLARE lcY INTEGER;
     START TRANSACTION;
-		BEGIN
-			SELECT `mineName` FROM tblMineTile
-			WHERE ((`mapName` = pMap) AND (`xLocation` = pXLocation) AND (`yLocation` = pYLocation))
-			INTO lcMine;
-			IF (lcMine is NULL) THEN -- check if tile has mine
-				SELECT "There is nothing to mine on this tile" AS MESSAGE;
-			ELSEIF (EXISTS (SELECT * FROM tblMine WHERE (`mineName` = lcMine AND `minedBy` = pItemName))) THEN -- if true, check if item matches mine
-				BEGIN
-					UPDATE tblCharacterItem
-					SET `itemDurability` = `itemDurability` - 1
-					WHERE `itemName` = pItemName;-- this will do it for all items a character has of the same name...... grrr
-					UPDATE tblCharacter -- Add points to character and user
-					SET `characterScoreTotal` = `characterScoreTotal` + 1;
-					UPDATE tblCharacterMap
-					SET `score` = `score` + 1;
-					UPDATE tblUser
-					SET `userScore` = `userScore` + 1
-					WHERE `username` = pUserName;
-					IF (SELECT `itemDurability` FROM tblCharacterItem WHERE `itemDurability` <= 0) THEN
-						BEGIN
-							DELETE FROM tblCharacterItem
-							WHERE `itemDurability` <= 0;
-						END;
-					END IF;
-				END;
-			ELSE
-				BEGIN
-					SELECT CONCAT(pItemName, " doesn't mine", lcMine) AS MESSAGE;
-				END;
-			END IF;
-		END;
+        SELECT `xPosition`, `yPosition`
+        FROM tblCharacterTile
+        WHERE `characterName` = pCharacterName AND `mapName` = pMap
+        INTo lcX, lcY;
+        SELECT `mineName` FROM tblMineTile
+        WHERE ((`mapName` = pMap) AND (`xLocation` = lcX) AND (`yLocation` = lcY))
+        INTO lcMine;
+        IF (lcMine is NULL) THEN -- check if tile has mine
+            BEGIN   
+                SELECT "There is nothing to mine on this tile" AS MESSAGE;
+            END;
+        ELSEIF (EXISTS (SELECT * FROM tblMine WHERE (`mineName` = lcMine AND `minedBy` = pItemName))) THEN -- if true, check if item matches mine
+            BEGIN
+                UPDATE tblCharacterItem
+                SET `itemDurability` = `itemDurability` - 1
+                WHERE `itemName` = pItemName;-- this will do it for all items a character has of the same name...... grrr
+                UPDATE tblCharacter -- Add points to character and user
+                SET `characterScoreTotal` = `characterScoreTotal` + 1;
+                UPDATE tblCharacterMap
+                SET `score` = `score` + 1;
+                UPDATE tblUser
+                SET `userScore` = `userScore` + 1
+                WHERE `username` = pUserName;
+                IF (SELECT `itemDurability` FROM tblCharacterItem WHERE `itemDurability` <= 0) THEN
+                    BEGIN
+                        DELETE FROM tblCharacterItem
+                        WHERE `itemDurability` <= 0;
+                    END;
+                END IF;
+            END;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pItemName, " doesn't mine", lcMine) AS MESSAGE;
+            END;
+        END IF;
 	COMMIT;
 END//
 DELIMITER ;
@@ -1264,10 +1271,18 @@ DELIMITER ;
 -- Admin selects game to end after
 DELIMITER //
 DROP PROCEDURE IF EXISTS getActiveGames//
-CREATE PROCEDURE getActiveGames()
+CREATE PROCEDURE getActiveGames(pAdminUserName VARCHAR(32))
 BEGIN
     START TRANSACTION;
-		SELECT `mapName` FROM tblCharacterMap GROUP BY `mapName`;
+    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+        BEGIN
+		    SELECT `mapName` FROM tblCharacterMap GROUP BY `mapName`;
+        END;
+    ELSE
+        BEGIN
+            SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+        END;
+    END IF;
     COMMIT;
 END//
 DELIMITER ;
@@ -1276,17 +1291,25 @@ call getActiveGames();
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminKillGame//
-CREATE PROCEDURE adminKillGame(pMapName VARCHAR(16)) 
+CREATE PROCEDURE adminKillGame(pMapName VARCHAR(16), pAdminUserName VARCHAR(32)) 
 BEGIN
     Start TRANSACTION;
-        DELETE FROM tblCharacterMap -- don't delete the tblMap through out the whole thing
-        WHERE `mapName` = pMapName;
-        DELETE FROM tblCharacterTile
-        WHERE `mapName` = pMapName;
-        DELETE FROM tblMineTile
-        WHERE `mapName` = pMapName;
-        DELETE FROM tblTileItem
-        WHERE `mapName` = pMapName;
+        IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+            BEGIN
+                DELETE FROM tblCharacterMap
+                WHERE `mapName` = pMapName;
+                DELETE FROM tblCharacterTile
+                WHERE `mapName` = pMapName;
+                DELETE FROM tblMineTile
+                WHERE `mapName` = pMapName;
+                DELETE FROM tblTileItem
+                WHERE `mapName` = pMapName;
+            End;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+            END;
+        END IF;
     COMMIT;
 END//
 DELIMITER ;
@@ -1385,13 +1408,15 @@ DELIMITER ;
 -- Delete a user
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminDeleteUser//
-CREATE PROCEDURE adminDeleteUser(pUserName VARCHAR(32))
+CREATE PROCEDURE adminDeleteUser(pUserName VARCHAR(32), pAdminUserName VARCHAR(32))
 BEGIN
 START TRANSACTION;
 	IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
-        DELETE FROM tblUser 
-        WHERE `username` = pUserName;
-        SELECT CONCAT(pUserName, " is now Deleted") AS MESSAGE;
+        BEGIN
+            DELETE FROM tblUser 
+            WHERE `username` = pUserName;
+            SELECT CONCAT(pUserName, " is now Deleted") AS MESSAGE;
+        END;
 	ELSE
 		BEGIN
 			SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
@@ -1407,12 +1432,20 @@ DELIMITER ;
 -- Get list of locked users
 DELIMITER //
 DROP PROCEDURE IF EXISTS getLockedUsers//
-CREATE PROCEDURE getLockedUsers() 
+CREATE PROCEDURE getLockedUsers(pAdminUserName) 
 BEGIN
 START TRANSACTION;
-	SELECT `username`
-	FROM tblUser
-	WHERE `isLocked` = true;
+    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+        BEGIN
+            SELECT `username`
+            FROM tblUser
+            WHERE `isLocked` = true;
+        END;
+    ELSE
+        BEGIN
+			SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+		END;
+	END IF;
 COMMIT;
 END//
 DELIMITER ;
@@ -1420,21 +1453,28 @@ DELIMITER ;
 -- Choose user to unlock
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminUnlockUser//
-CREATE PROCEDURE adminUnlockUser(pUserName VARCHAR(32)) 
+CREATE PROCEDURE adminUnlockUser(pUserName VARCHAR(32), pAdminUserName VARCHAR(32)) 
 BEGIN
 START TRANSACTION;
-    IF EXISTS (SELECT * FROM tblUser WHERE `userName` = pUserName) THEN
+    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
         BEGIN
-            UPDATE tblUser 
-            SET `isLocked` = false, `loginAttempts` = 0
-            WHERE `username` = pUserName;
-            SELECT CONCAT(pUserName, " has been unlocked") as Message;
-        END;
+        IF EXISTS (SELECT * FROM tblUser WHERE `userName` = pUserName) THEN
+            BEGIN
+                UPDATE tblUser 
+                SET `isLocked` = false, `loginAttempts` = 0
+                WHERE `username` = pUserName;
+                SELECT CONCAT(pUserName, " has been unlocked") as Message;
+            END;
+        ELSE
+            BEGIN
+                SELECT CONCAT("The user ", pUserName, " doesn't exist") AS MESSAGE;
+            END;
+        END IF;
     ELSE
         BEGIN
-            SELECT CONCAT("The user ", pUserName, " doesn't exist") AS MESSAGE;
-        END;
-    END IF;
+            SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+		END;
+	END IF;
 COMMIT;
 END//
 DELIMITER ;
