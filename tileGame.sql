@@ -429,7 +429,7 @@ BEGIN
 	START TRANSACTION;
         SELECT `username`, `userPassword`, `islocked`, `loginAttempts`
         FROM tblUser
-        WHERE `username` = pUsername
+        WHERE `username` = pUserName
         INTO lcUserName, lcUserPassword, lcUserIsLocked, lcUserLoginAttempts;
         IF (lcUserName IS NULL)
         THEN
@@ -442,7 +442,7 @@ BEGIN
                 SET `loginAttempts` = lcUserLoginAttempts + 1
                 WHERE `username` = pUserName;
                 SET lcUserLoginAttempts = lcUserLoginAttempts + 1;
-                SELECT "Incorrect Password" AS `MESSAGE`;
+                SELECT "Incorrect Password" AS `MESSAGE`, `username`;
             END;
         ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND ((lcUserLoginAttempts >= 5) OR (lcUserIsLocked)))
         THEN
@@ -504,16 +504,18 @@ DROP PROCEDURE IF EXISTS deleteUser//
 CREATE PROCEDURE deleteUser(pUserName VARCHAR(32))
 BEGIN
     START TRANSACTION;
-        IF(EXISTS(SELECT * FROM tblUser WHERE `username` = pUserName)) THEN
+        IF EXISTS (SELECT * FROM tblUser WHERE `username` = pUserName) THEN
             DELETE FROM tblUser
             WHERE `username` = pUserName;
-            SELECT CONCAT(pUserName, " has been deleted") AS MESSAGE;
+            SELECT CONCAT(pUserName, " has been deleted") AS Message;
         ELSE
-            SELECT CONCAT(pUserName, " doesn't exists") AS MESSAGE;
+            SELECT CONCAT(pUserName, " doesn't exists") AS Message;
 		END IF;
     COMMIT;
 END//
 DELIMITER ;
+
+select * from tblUser;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Creates Character (inlcuding character skills created) WORKING
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

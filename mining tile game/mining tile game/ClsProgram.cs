@@ -51,6 +51,11 @@ namespace miningTileGame
                     {
                         Console.WriteLine(aRow["Message"]);
                     }
+                    if (ClsTest.UserName == null)
+                    {
+                        menu();
+                        break;
+                    }
                     userMenu();
                     break;
 
@@ -66,9 +71,9 @@ namespace miningTileGame
         private static void userMenu()
         {
             //string currentUser = ClsTest.getUserName().ToString();
-            Console.WriteLine("The current User is" + ClsTest.getUserName().ToString());
+            Console.WriteLine("The current User is " + ClsTest.UserName.ToString());
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~User Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-                "n 1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Admin Menu\n7) Main Menu\n8) Exit Program");
+                "\n1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Admin Menu\n7) Main Menu\n8) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
@@ -88,7 +93,7 @@ namespace miningTileGame
                     break;
 
                 case "2": //Delete User
-                    Console.WriteLine("Are you sure you want to delete this user?\n1) Yes\n2) No");
+                    Console.WriteLine("Are you sure you want to delete this user?\n\n1) Yes\n2) No");
                     string deleteUserResponse = Console.ReadLine();
                     if (Equals(deleteUserResponse, 1))
                     {
@@ -98,7 +103,7 @@ namespace miningTileGame
                             Console.WriteLine(aRow["Message"]);
                         }
                     }
-                    userMenu();
+                    menu();
                     break;
 
                 case "3": //User Creates Character
