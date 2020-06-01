@@ -1,11 +1,9 @@
 DROP DATABASE IF EXISTS dbTileGame;
 CREATE DATABASE dbTileGame;
 USE dbTileGame;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Procdure to create the all of the tables in the database
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS makeTileGameDB//
 CREATE PROCEDURE makeTileGameDB()
@@ -143,11 +141,9 @@ CREATE PROCEDURE makeTileGameDB()
 DELIMITER ;
 
 CALL makeTileGameDB();
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- INSERT Statements
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 INSERT INTO tblUser(`username`, `email`, `userPassword`, `loginAttempts`, `userscore`, `isLocked`, `isAdmin`, `isOnline`)
 Values 
 ('Mark', 'kevin-christison@live.nmit.ac.nz', 'MarksPassword', 0, 0, false, true, false),
@@ -306,11 +302,9 @@ Values
 ('JohnCharacter', "5 by 5", 3, 3, 0),
 ('StepehnCharacter', "5 by 5", 3, 3, 1),
 ('MichaelCharacter', "5 by 5", 3, 3, 0);
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- UPDATE Statements
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 -- UPDATE tblUser
 -- SET username = 'Kram'
 -- WHERE username = 'Mark';
@@ -366,70 +360,40 @@ Values
 -- UPDATE tblCharacterTile
 -- SET tileID = 15
 -- WHERE tileID = 14;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- SELECT Statements
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SELECT * FROM tblUser;
-
 SELECT * FROM tblSkill;
-
 SELECT * FROM tblItem;
-
 SELECT * FROM tblMine;
-
 SELECT * FROM tblMap;
-
 SELECT * FROM tblTile;
-
 SELECT * FROM tblTileItem;
-
 SELECT * FROM tblCharacter;
-
 SELECT * FROM tblCharacterSkill;
-
 SELECT * FROM tblChat;
-
 SELECT * FROM tblCharacterItem;
-
 SELECT * FROM tblCharacterMap;
-
 SELECT * FROM tblMineTile;
-
 SELECT * FROM tblCharacterTile;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- DELETE Statements
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 -- DELETE FROM tblCharacterTile;
-
 -- DELETE FROM tblMineTile;
-
 -- DELETE FROM tblCharacterMap;
-
 -- DELETE FROM tblCharacterItem;
-
 -- DELETE FROM tblChat;
-
 -- DELETE FROM tblCharacterSkill;
-
 -- DELETE FROM tblCharacter;
-
 -- DELETE FROM tblTileItem;
-
 -- DELETE FROM tblTile;
-
 -- DELETE FROM tblMap;
-
 -- DELETE FROM tblMine;
-
 -- DELETE FROM tblItem;
-
 -- DELETE FROM tblSkill;
-
 -- DELETE FROM tblUser;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Register a User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -451,10 +415,6 @@ START TRANSACTION;
 COMMIT;
 END//
 DELIMITER ;
-
-CALL registerUser("steve", "steve", "steve");
-call registeruser("foo", "foo", "foo");
-SELECT * FROM tbluser;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Login with a user  
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -504,9 +464,6 @@ BEGIN
 	COMMIT;
 END//
 DELIMITER ;
-
-call userLogin("steve", "steve");
-SELECT * FROM tblUser;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Edit User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -539,8 +496,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call editUser("steve", "foo", "foo", "foo");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Delete User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -559,8 +514,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call deleteUser("foo");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Creates Character (inlcuding character skills created) WORKING
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -587,9 +540,6 @@ BEGIN
 	COMMIT;
 END//
 DELIMITER ;
-
-call createCharacter("steve", "stever", "Miner","Gatherer","Fisher","Woodcutter");
-call createCharacter("steve", "steve", "Miner","Gatherer","Fisher","Woodcutter");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Deletes Character
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -605,8 +555,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call getAllUserCharacters("steve");
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS deleteCharacter//
@@ -627,8 +575,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call deleteCharacter("stever", "steve");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Select Character to play game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -652,9 +598,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call selectCharacter("steve", "steve"); 
-SELECT * FROM tblCharacter;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Display a list of online characters
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -669,8 +612,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call onlineCharacters();
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Create Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -700,8 +641,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call chooseOpponent("steve");
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS createGame//
@@ -798,35 +737,9 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call createGame("steve", "stever", "13 by 13"); -- note character can only play one game at a time
-
-DELETE FROM tblCharacterMap
-WHERE `characterName` = "steve" OR `characterName` = "stever";
-DELETE FROM tblCharacterTile
-WHERE `characterName` = "steve" OR `characterName` = "stever";
-
-SELECT * FROM tblCharacterMap;
-SELECT * FROM tblCharacterTile;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Leave Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Return a list of games the character is currently in
--- User makes a selection for game to leave
--- DELIMITER //
--- Already made in getCharacterMaps
--- DROP PROCEDURE IF EXISTS getCharactersMaps//
--- CREATE PROCEDURE getCharactersMaps(pCharacterName VARCHAR(32))
--- BEGIN
--- START TRANSACTION;
---     SELECT `mapName`
---     FROM tblCharacterMap
---     WHERE `characterName` = pCharacterName;
--- COMMIT;
--- END//
--- DELIMITER ;
-
-Call getCharactersMaps("steve");
 -- Leave game but can rejoin game later
 DELIMITER //
 DROP PROCEDURE IF EXISTS leaveCharacterMap//
@@ -875,8 +788,6 @@ BEGIN
         WHERE ((`characterName` = pCharacterName) AND (`isPlaying` = 0));
     COMMIT;
 END//
-
-call getMapsCharacterCanRejoin("steve");
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS characterReturnToMap//
@@ -958,8 +869,6 @@ DECLARE lcHomeY INTEGER;
     END IF;
     COMMIT;
 END//
-
-call characterReturnToMap("steve", "13 by 13", "none"); -- todo test
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character makes Move
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1098,13 +1007,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call characterMakesMove("steve", "right", "13 by 13");
-call characterMakesMove("stever", "down", "13 by 13");
-
-SELECT * FROM tblCharacterTile WHERE `characterName` = "steve";
-SELECT * FROM tblCharacterTile WHERE `characterName` = "stever";
-SELECT * FROM tblCharacterTile WHERE `mapName` = "3 by 3";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character picks up item
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1144,23 +1046,9 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call characterPicksUpItem("MarkCharacter", "3 by 3")
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character Uses Item on Mine
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- get all maps a character is playing
--- character selects map c#
--- get all itmes belonging to a player
--- character selects item to use c#
--- check if tile has mine
-    -- if true, check if item matches mine
-        -- if true use item
-            -- reduce itemDurability
-            -- if itemDurability is <=0 DELETE item
-            -- Add points to character and user
-
--- get all maps a character is playing
 DELIMITER //
 DROP PROCEDURE IF EXISTS getCharacterMaps//
 CREATE PROCEDURE getCharacterMaps(pCharacterName VARCHAR(32))
@@ -1251,19 +1139,17 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Check if Admin to Access Admin Menu
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS checkIfAdmin//
-CREATE PROCEDURE checkIfAdmin(pUserName VARCHAR(32), pUserPassword VARCHAR(64)) 
+CREATE PROCEDURE checkIfAdmin(pUserName VARCHAR(32)) 
 BEGIN
     START TRANSACTION;
         SELECT isAdmin
         FROM tblUser
-        WHERE `username` = pUserName AND `userPassword` = pUserPassword;
+        WHERE `username` = pUserName;
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin Kills Running Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1286,8 +1172,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call getActiveGames();
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminKillGame//
@@ -1314,29 +1198,28 @@ BEGIN
 END//
 DELIMITER ;
 
-call getActiveGames();
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin adds a user
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminAddUser//
-CREATE PROCEDURE adminAddUser(pUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BOOLEAN)
+CREATE PROCEDURE adminAddUser(pAdminUserName VARCHAR(32), pCurrentUserName VARCHAR(32), pNewUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BOOLEAN)
 BEGIN
 START TRANSACTION;
     IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
         IF EXISTS(
             SELECT *
             FROM tblUser
-            WHERE `username` = pUserName OR `email` = pEmail)
+            WHERE `username` = pNewUserName OR `email` = pEmail)
         THEN
             BEGIN
-                SELECT 'Username or Email already exists' AS MESSAGE;
+                SELECT CONCAT(pNewUserName, ' or Email already exists') AS MESSAGE;
             END;
         ELSE
             BEGIN
                 INSERT INTO tblUser(`username` , `email`, `userPassword`, `isAdmin`)
-                VALUES (pUserName, pEmail, pUserPassword, pIsAdmin);
-                SELECT CONCAT(pUserName, " has been registered")  AS MESSAGE;
+                VALUES (pNewUserName, pEmail, pUserPassword, pIsAdmin);
+                SELECT CONCAT(pNewUserName, " has been registered")  AS MESSAGE;
             END;
         END IF;
     ELSE
@@ -1384,8 +1267,8 @@ END//
 DELIMITER ;
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Admin deletes user
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Admin deletes user  funcitonality already exists
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminGetAllUsers//
 CREATE PROCEDURE adminGetAllUsers(pAdminUserName VARCHAR(32))
@@ -1405,7 +1288,7 @@ COMMIT;
 END//
 DELIMITER ;
 
--- Delete a user
+Delete a user
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminDeleteUser//
 CREATE PROCEDURE adminDeleteUser(pUserName VARCHAR(32), pAdminUserName VARCHAR(32))
@@ -1431,8 +1314,8 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get list of locked users
 DELIMITER //
-DROP PROCEDURE IF EXISTS getLockedUsers//
-CREATE PROCEDURE getLockedUsers(pAdminUserName) 
+DROP PROCEDURE IF EXISTS adminGetLockedUsers//
+CREATE PROCEDURE adminGetLockedUsers(pAdminUserName) 
 BEGIN
 START TRANSACTION;
     IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN

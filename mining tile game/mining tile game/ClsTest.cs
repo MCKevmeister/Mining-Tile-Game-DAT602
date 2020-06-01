@@ -324,49 +324,130 @@ namespace miningTileGame
             ParamList.Add(paramUsername);
             ParamList.Add(paramItemName);
             ParamList.Add(paramMap);
-            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL useItem(@Character, @Direction, @Map)", ParamList.ToArray()); //ttry catch??
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL useItem(@Character, @Username, @ItemName, @Map)", ParamList.ToArray()); //ttry catch??
             return aDataSet;
         }
-        //useItem(pCharacterName VARCHAR(32), pUserName VARCHAR(32), pItemName VARCHAR(32), pMap VARCHAR(16)) 
-
-        // Characater Chats
-        //characterChats(pCharacterName VARCHAR(32), pMessage VARCHAR(255)) 
-
-        //Check if Admin to Access Admin Menu
-        //checkIfAdmin(pUserName VARCHAR(32), pUserPassword VARCHAR(64)) 
-
-        //Admin Kills Running Game
-        //getActiveGames()
-        //adminKillGame(pMapName VARCHAR(16)) 
-
-        // Admin adds User
-        //adminAddUser(pUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BOOLEAN)
-
-        // Admin edits User
-        // adminEditUser(pAdminUserName VARCHAR(32), pUserName VARCHAR(32) , pNewUserName VARCHAR(64), pEmail VARCHAR(64), pNewUserEmail VARCHAR(64), pUserPassword VARCHAR(64), pLoginAttempts INTEGER, pUserScore INTEGER, pIsLocked BOOLEAN, pIsAdmin BOOLEAN)
-
-        // Admin deletes user
-        // adminGetAllUsers(pAdminUserName VARCHAR(32))
-        // adminDeleteUser(pUserName VARCHAR(32), pAdminUserName VARCHAR(32))
-        public static DataSet getAllUsers()
+        public static DataSet characterChats(string pMessage)
         {
-            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getAllUsers()");
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
+            var paramMessage = new MySqlParameter("@Message", MySqlDbType.VarChar, 32);
+            paramCharacter.Value = _characterName;
+            paramMessage.Value = pMessage;
+            ParamList.Add(paramCharacter);
+            ParamList.Add(paramMessage);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL characterChats(@Character, @Message", ParamList.ToArray()); //ttry catch??
             return aDataSet;
         }
-        public static DataSet getLockedUsers()
-        {
-            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getLockedUsers()");
-            return aDataSet;
-        }
-        public static DataSet unlockUser(string pUsername)
+        public static DataSet checkIfAdmin()
         {
             List<MySqlParameter> ParamList = new List<MySqlParameter>();
             var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            paramUsername.Value = pUsername;
+            paramUsername.Value = _userName;
             ParamList.Add(paramUsername);
-
-            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminUnlockUser(@Username)", ParamList.ToArray());
-
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL checkIfAdmin(@Username", ParamList.ToArray());
+            return aDataSet;
+        }
+        public static DataSet getActiveGames()
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
+            paramUsername.Value = _userName;
+            ParamList.Add(paramUsername);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getActiveGames(@Username)");
+            return aDataSet;
+        }
+        public static DataSet adminKillGame(string pMap)
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
+            paramMap.Value = pMap;
+            paramAdminUsername.Value = _userName;
+            ParamList.Add(paramMap);
+            ParamList.Add(paramAdminUsername);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminKillGame(@Map, @AdminUsername)");
+            return aDataSet;
+        }
+        public static DataSet adminAddUser(string pUsername, string pEmail, string pPassword, Boolean pIsAdmin)
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
+            var paramEmail = new MySqlParameter("@Email", MySqlDbType.VarChar, 64);
+            var paramPassword = new MySqlParameter("@Password", MySqlDbType.VarChar, 64);
+            var paramIsAdmin = new MySqlParameter("@IsAdmin", MySqlDbType.Int16); // mysql connection has issues with numbers that arn't integers
+            paramAdminUsername.Value = _userName;
+            paramUsername.Value = pUsername;
+            paramEmail.Value = pEmail;
+            paramPassword.Value = pPassword;
+            paramIsAdmin.Value = pIsAdmin;
+            ParamList.Add(paramAdminUsername);
+            ParamList.Add(paramUsername);
+            ParamList.Add(paramEmail);
+            ParamList.Add(paramPassword);
+            ParamList.Add(paramIsAdmin);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminAddUser(@AdminUsername, @Username, @Email, @Password, @IsAdmin)", ParamList.ToArray());
+            return aDataSet;
+        }
+        public static DataSet adminEditUser(string pNewUserName, string pNewUserPassword, string pNewUserEmail)
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
+            var paramNewUsername = new MySqlParameter("@NewUsername", MySqlDbType.VarChar, 32);
+            var paramNewUserPassword = new MySqlParameter("@NewUserPassword", MySqlDbType.VarChar, 64);
+            var paramNewUserEmail = new MySqlParameter("@NewUserEmail", MySqlDbType.VarChar, 64);
+            paramAdminUsername.Value = _userName;
+            paramNewUsername.Value = pNewUserName;
+            paramNewUserPassword.Value = pNewUserPassword;
+            paramNewUserEmail.Value = pNewUserEmail;
+            ParamList.Add(paramAdminUsername);
+            ParamList.Add(paramNewUsername);
+            ParamList.Add(paramNewUserPassword);
+            ParamList.Add(paramNewUserEmail);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminEditUser(@AdminUsername, @Username, @NewUsername, @NewUserPassword, @NewUserEmail)", ParamList.ToArray());
+            return aDataSet;
+        }
+        public static DataSet adminGetAllUsers()
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
+            paramAdminUsername.Value = _userName;
+            ParamList.Add(paramAdminUsername);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminGetAllUsers(@AdminUsername)", ParamList.ToArray());
+            return aDataSet;
+        }
+        public static DataSet adminDeleteUser(string pUsername)
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
+            var paramDeleteUser = new MySqlParameter("@DeleteUser", MySqlDbType.VarChar, 32);
+            paramAdminUsername.Value = _userName;
+            paramDeleteUser.Value = pUsername;
+            ParamList.Add(paramAdminUsername);
+            ParamList.Add(paramDeleteUser);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminDeleteUser(@DeleteUser, @AdminUsername)", ParamList.ToArray());
+            return aDataSet;
+        }
+        public static DataSet adminGetLockedUsers()
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
+            paramAdminUsername.Value = _userName;
+            ParamList.Add(paramAdminUsername);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminGetLockedUsers(@AdminUsername)", ParamList.ToArray());
+            return aDataSet;
+        }
+        public static DataSet adminUnlockUser(string pUsername)
+        {
+            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            var paramUnlockUser = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
+            paramUnlockUser.Value = pUsername;
+            paramAdminUsername.Value = _userName;
+            ParamList.Add(paramUnlockUser);
+            ParamList.Add(paramAdminUsername);
+            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminUnlockUser(@Username, @AdminUsername)", ParamList.ToArray());
             return aDataSet;
         }
     }

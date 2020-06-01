@@ -54,11 +54,7 @@ namespace miningTileGame
                     userMenu();
                     break;
 
-                case "4": //Admin Menu
-                    adminMenu();
-                    break;
-
-                case "5": //Exit
+                case "4": //Exit
                     Environment.Exit(0);
                     break;
 
@@ -287,7 +283,7 @@ namespace miningTileGame
                         registerAdmin = false;
                     }
 
-                    DataSet RegisterUser = ClsTest.adminRegisterUser(registerUserName, registerEmail, registerPassword, registerAdmin);
+                    DataSet RegisterUser = ClsTest.adminAddUser(registerUserName, registerEmail, registerPassword, registerAdmin);
                     foreach (DataRow aRow in RegisterUser.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
@@ -302,7 +298,7 @@ namespace miningTileGame
 
                 case "4": //Admin deletes user
                     Console.WriteLine("~~~~List of All Users~~~~");
-                    DataSet allUsers = ClsTest.getAllUsers();
+                    DataSet allUsers = ClsTest.adminGetAllUsers();
                     foreach (DataRow aRow in allUsers.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["username"]);
@@ -319,14 +315,14 @@ namespace miningTileGame
 
                 case "5": //Admin unlocks locked user
                     Console.WriteLine("~~~~List of All Locked Users~~~~");
-                    DataSet lockedUsers = ClsTest.getLockedUsers();
+                    DataSet lockedUsers = ClsTest.adminGetLockedUsers();
                     foreach (DataRow aRow in lockedUsers.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["username"]);
                     }
                     Console.WriteLine("Please type the name of the user you want to unlock?");
                     var userToUnlock = Console.ReadLine();
-                    DataSet unlockUser = ClsTest.unlockUser(userToUnlock);
+                    DataSet unlockUser = ClsTest.adminUnlockUser(userToUnlock);
                     foreach (DataRow aRow in unlockUser.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
