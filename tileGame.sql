@@ -401,6 +401,18 @@ DROP PROCEDURE IF EXISTS registerUser;
 DELIMITER //
 CREATE PROCEDURE registerUser(pUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64))
 BEGIN
+    DECLARE exit handler for sqlexception
+	BEGIN
+      ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "registerUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+	BEGIN
+     ROLLBACK;
+     SHOW WARNINGS LIMIT 1;
+    END;
 START TRANSACTION;
     IF EXISTS (SELECT * FROM tblUser WHERE `username` = pUserName OR `email` = pEmail) THEN
         BEGIN
@@ -422,10 +434,23 @@ DROP PROCEDURE IF EXISTS userLogin;
 DELIMITER //
 CREATE PROCEDURE userLogin(pUserName VARCHAR(32), pUserPassword VARCHAR(64))
 BEGIN
-	DECLARE lcUserName VARCHAR(32);
+    DECLARE lcUserName VARCHAR(32);
 	DECLARE lcUserPassword VARCHAR(64);
 	DECLARE lcUserIsLocked BOOLEAN;
 	DECLARE lcUserLoginAttempts INT;
+    DECLARE exit handler for sqlexception
+	BEGIN
+      ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "userLogin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+	BEGIN
+     ROLLBACK;
+     SHOW WARNINGS LIMIT 1;
+    END;
+
 	START TRANSACTION;
         SELECT `username`, `userPassword`, `islocked`, `loginAttempts`
         FROM tblUser
@@ -466,7 +491,7 @@ END//
 DELIMITER ;
 
 select * from tblUser;
-Call 
+Call userLogin("mark", "mark");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Edit User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -474,6 +499,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS editUser//
 CREATE PROCEDURE editUser(pUserName VARCHAR(32), pNewUserName VARCHAR(32), pNewUserPassword VARCHAR(64), pNewUserEmail VARCHAR(64))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "editUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
 		IF NOT EXISTS (SELECT * FROM tblUser WHERE `username` = pUserName) THEN
 			BEGIN
@@ -506,6 +543,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS deleteUser//
 CREATE PROCEDURE deleteUser(pUserName VARCHAR(32))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "deleteUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         IF EXISTS (SELECT * FROM tblUser WHERE `username` = pUserName) THEN
             DELETE FROM tblUser
@@ -526,12 +575,24 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS createCharacter//
 CREATE PROCEDURE createCharacter(pUserName VARCHAR(32), pCharacterName VARCHAR(32), pSkill1 VARCHAR(20), pSkill2 VARCHAR(20), pSkill3 VARCHAR(20), pSkill4 VARCHAR(20))
 BEGIN
-	START TRANSACTION;
-		IF EXISTS(SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName)
-		THEN
-			BEGIN
-				SELECT CONCAT("Sorry, the character ", pCharacterName, " has already been taken") AS MESSAGE;
-			END;
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "createCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
+        START TRANSACTION;
+            IF EXISTS(SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName)
+            THEN
+                BEGIN
+                    SELECT CONCAT("Sorry, the character ", pCharacterName, " has already been taken") AS MESSAGE;
+                END;
 		ELSE
 			BEGIN
 				INSERT INTO tblCharacter(`characterName`, `username`)
@@ -553,6 +614,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS getAllUserCharacters//
 CREATE PROCEDURE getAllUserCharacters(pUserName VARCHAR(32))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getAllUserCharacters", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         SELECT `characterName`
         FROM tblCharacter
@@ -565,6 +638,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS deleteCharacter//
 CREATE PROCEDURE deleteCharacter(pCharacterName VARCHAR(32), pUserName VARCHAR(32))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "deleteCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `username` = pUserName)) THEN
 			BEGIN
@@ -587,6 +672,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS selectCharacter//
 CREATE PROCEDURE selectCharacter(pCharacterName VARCHAR(32), pUserName VARCHAR(32))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "selectCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `userName` = pUserName)) THEN
             BEGIN
@@ -610,6 +707,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS onlineCharacters//
 CREATE PROCEDURE onlineCharacters()
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "onlineCharacters", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         SELECT `characterName`
         FROM tblcharacter
@@ -624,6 +733,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS getMaps//
 CREATE PROCEDURE getMaps()
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getMaps", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         SELECT `mapName`
         FROM tblmap;
@@ -639,6 +760,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS chooseOpponent//
 CREATE PROCEDURE chooseOpponent(pCharacterName VARCHAR(32))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "chooseOpponent", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         SELECT `characterName`
         FROM tblCharacter
@@ -651,6 +784,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS createGame//
 CREATE PROCEDURE createGame(pCharacter1 VARCHAR(32), pCharacter2 VARCHAR(32), pMap VARCHAR(16))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "createGame", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
 	DECLARE lcXHome INTEGER;
     DECLARE lcYHome INTEGER;
     DECLARE lcXMax INTEGER;
@@ -750,6 +895,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS leaveCharacterMap//
 CREATE PROCEDURE leaveCharacterMap(pCharacterName VARCHAR(32), pMap VARCHAR(16))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "leaveCharacterMap", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         DELETE FROM tblCharacterMap
         WHERE `characterName` = pCharacterName AND `mapName` = pMap;
@@ -771,6 +928,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS endCharacterGame//
 CREATE PROCEDURE endCharacterGame(pCharacterName VARCHAR(32), pMap VARCHAR(16))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "endCharacterGame", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         DELETE FROM tblCharacterTile
         WHERE `characterName` = pCharacterName AND `mapName` = pMap;
@@ -787,6 +956,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS getMapsCharacterCanRejoin//
 CREATE PROCEDURE getMapsCharacterCanRejoin(pCharacterName VARCHAR(32))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getMapsCharacterCanRejoin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION; 
         SELECT `mapName` 
         FROM tblCharacterTile 
@@ -881,6 +1062,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS characterMakesMove//
 CREATE PROCEDURE characterMakesMove(pCharacterName VARCHAR(32), pDirection VARCHAR(5), pMapName VARCHAR(16)) 
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "characterMakesMove", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
     IF (EXISTS(SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName AND `mapName` = pMapName)) THEN
         IF (pDirection = "left") THEN
@@ -1017,8 +1210,20 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS characterPicksUpItem//
-CREATE PROCEDURE   -- , pXLocation INTEGER, pYLocation INTEGER) -- dont need to pass location, can retrieve from DB
+CREATE PROCEDURE characterPicksUpItem(pCharacterName, pMap)  -- , pXLocation INTEGER, pYLocation INTEGER) -- dont need to pass location, can retrieve from DB
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "characterPicksUpItem", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     DECLARE lcItem VARCHAR(32);
     DECLARE lcXLocation INTEGER;
     DECLARE lcYLocation INTEGER;
@@ -1058,6 +1263,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS getCharacterMaps//
 CREATE PROCEDURE getCharacterMaps(pCharacterName VARCHAR(32))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getCharacterMaps", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
     IF EXISTS (SELECT * FROM tblCharacter WHERE characterName = pCharacterName) THEN
         SELECT `mapName` FROM tblCharacterMap WHERE `characterName`= pCharacterName;
@@ -1072,6 +1289,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS getCharacterItems//
 CREATE PROCEDURE getCharacterItems(pCharacterName VARCHAR(32)) 
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getCharacterItems", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         IF EXISTS (SELECT * FROM tblCharacter WHERE characterName = pCharacterName) THEN
             SELECT `itemName` FROM tblCharacterItem WHERE `characterName` = pCharacterName;
@@ -1085,6 +1314,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS useItem//
 CREATE PROCEDURE useItem(pCharacterName VARCHAR(32), pUserName VARCHAR(32), pItemName VARCHAR(32), pMap VARCHAR(16)) 
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "useItem", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     DECLARE lcMine VARCHAR(20);
     DECLARE lcX INTEGER;
     DECLARE lcY INTEGER;
@@ -1134,6 +1375,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS characterChats//
 CREATE PROCEDURE characterChats(pCharacterName VARCHAR(32), pMessage VARCHAR(255)) 
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "characterChats", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         INSERT INTO tblChat
         VALUES (pCharacterName, pMessage, NOW());
@@ -1148,6 +1401,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS checkIfAdmin//
 CREATE PROCEDURE checkIfAdmin(pUserName VARCHAR(32)) 
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "checkIfAdmin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
         SELECT isAdmin
         FROM tblUser
@@ -1164,6 +1429,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS getActiveGames//
 CREATE PROCEDURE getActiveGames(pAdminUserName VARCHAR(32))
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getActiveGames", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     START TRANSACTION;
     IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
         BEGIN
@@ -1182,6 +1459,18 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS adminKillGame//
 CREATE PROCEDURE adminKillGame(pMapName VARCHAR(16), pAdminUserName VARCHAR(32)) 
 BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "adminKillGame", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
     Start TRANSACTION;
         IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
             BEGIN
@@ -1210,29 +1499,41 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS adminAddUser//
 CREATE PROCEDURE adminAddUser(pAdminUserName VARCHAR(32), pCurrentUserName VARCHAR(32), pNewUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BOOLEAN)
 BEGIN
-START TRANSACTION;
-    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
-        IF EXISTS(
-            SELECT *
-            FROM tblUser
-            WHERE `username` = pNewUserName OR `email` = pEmail)
-        THEN
-            BEGIN
-                SELECT CONCAT(pNewUserName, ' or Email already exists') AS MESSAGE;
-            END;
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "adminAddUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
+    START TRANSACTION;
+        IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+            IF EXISTS(
+                SELECT *
+                FROM tblUser
+                WHERE `username` = pNewUserName OR `email` = pEmail)
+            THEN
+                BEGIN
+                    SELECT CONCAT(pNewUserName, ' or Email already exists') AS MESSAGE;
+                END;
+            ELSE
+                BEGIN
+                    INSERT INTO tblUser(`username` , `email`, `userPassword`, `isAdmin`)
+                    VALUES (pNewUserName, pEmail, pUserPassword, pIsAdmin);
+                    SELECT CONCAT(pNewUserName, " has been registered")  AS MESSAGE;
+                END;
+            END IF;
         ELSE
             BEGIN
-                INSERT INTO tblUser(`username` , `email`, `userPassword`, `isAdmin`)
-                VALUES (pNewUserName, pEmail, pUserPassword, pIsAdmin);
-                SELECT CONCAT(pNewUserName, " has been registered")  AS MESSAGE;
+                SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
             END;
         END IF;
-    ELSE
-        BEGIN
-            SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
-        END;
-    END IF;
-COMMIT;
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -1243,31 +1544,43 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS adminEditUser//
 CREATE PROCEDURE adminEditUser(pAdminUserName VARCHAR(32), pUserName VARCHAR(32) , pNewUserName VARCHAR(64), pEmail VARCHAR(64), pNewUserEmail VARCHAR(64), pUserPassword VARCHAR(64), pLoginAttempts INTEGER, pUserScore INTEGER, pIsLocked BOOLEAN, pIsAdmin BOOLEAN)
 BEGIN
-START TRANSACTION;
-    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
-        BEGIN
-            IF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName)
-            THEN
-                BEGIN
-                    SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
-                END;
-            ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
-            THEN
-                BEGIN
-                    SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
-                END;
-            ELSE
-                UPDATE tblUser
-                SET `email` = username, pNewUserName = pNewUserEmail, `userPassword` = pNewUserPassword, `loginAttempts` = pLoginAttempts, `userScore` = pUserScore
-                WHERE pUserName = `username`;
-            END IF;
-        END;
-    ELSE
-        BEGIN
-            SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
-        END;
-    END IF;
-COMMIT;   
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "adminEditUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
+    START TRANSACTION;
+        IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+            BEGIN
+                IF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName)
+                THEN
+                    BEGIN
+                        SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
+                    END;
+                ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
+                THEN
+                    BEGIN
+                        SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
+                    END;
+                ELSE
+                    UPDATE tblUser
+                    SET `email` = username, pNewUserName = pNewUserEmail, `userPassword` = pNewUserPassword, `loginAttempts` = pLoginAttempts, `userScore` = pUserScore
+                    WHERE pUserName = `username`;
+                END IF;
+            END;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+            END;
+        END IF;
+    COMMIT;   
 END//
 DELIMITER ;
 
@@ -1278,18 +1591,30 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS adminGetAllUsers//
 CREATE PROCEDURE adminGetAllUsers(pAdminUserName VARCHAR(32))
 BEGIN
-START TRANSACTION;
-	IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
-		BEGIN
-			SELECT `username`
-			FROM tblUser;
-		END;
-	ELSE
-		BEGIN
-			SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
-		END;
-	END IF;
-COMMIT;
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "adminGetAllUsers", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
+    START TRANSACTION;
+        IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+            BEGIN
+                SELECT `username`
+                FROM tblUser;
+            END;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+            END;
+        END IF;
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -1298,19 +1623,31 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS adminDeleteUser//
 CREATE PROCEDURE adminDeleteUser(pUserName VARCHAR(32), pAdminUserName VARCHAR(32))
 BEGIN
-START TRANSACTION;
-	IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
-        BEGIN
-            DELETE FROM tblUser 
-            WHERE `username` = pUserName;
-            SELECT CONCAT(pUserName, " is now Deleted") AS MESSAGE;
-        END;
-	ELSE
-		BEGIN
-			SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
-		END;
-	END IF;
-COMMIT;
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "adminDeleteUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
+    START TRANSACTION;
+        IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+            BEGIN
+                DELETE FROM tblUser 
+                WHERE `username` = pUserName;
+                SELECT CONCAT(pUserName, " is now Deleted") AS MESSAGE;
+            END;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+            END;
+        END IF;
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -1320,21 +1657,33 @@ DELIMITER ;
 -- Get list of locked users
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminGetLockedUsers//
-CREATE PROCEDURE adminGetLockedUsers(pAdminUserName) 
+CREATE PROCEDURE adminGetLockedUsers(pAdminUserName VARCHAR(32)) 
 BEGIN
-START TRANSACTION;
-    IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
-        BEGIN
-            SELECT `username`
-            FROM tblUser
-            WHERE `isLocked` = true;
-        END;
-    ELSE
-        BEGIN
-			SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
-		END;
-	END IF;
-COMMIT;
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "adminGetLockedUsers", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
+    START TRANSACTION;
+        IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
+            BEGIN
+                SELECT `username`
+                FROM tblUser
+                WHERE `isLocked` = true;
+            END;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
+            END;
+        END IF;
+    COMMIT;
 END//
 DELIMITER ;
 
@@ -1343,7 +1692,19 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS adminUnlockUser//
 CREATE PROCEDURE adminUnlockUser(pUserName VARCHAR(32), pAdminUserName VARCHAR(32)) 
 BEGIN
-START TRANSACTION;
+    DECLARE exit handler for sqlexception
+    BEGIN
+        ROLLBACK;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "adminUnlockUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+    BEGIN
+        ROLLBACK;
+        SHOW WARNINGS LIMIT 1;
+    END;
+    START TRANSACTION;
     IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
         BEGIN
         IF EXISTS (SELECT * FROM tblUser WHERE `userName` = pUserName) THEN
@@ -1358,6 +1719,7 @@ START TRANSACTION;
                 SELECT CONCAT("The user ", pUserName, " doesn't exist") AS MESSAGE;
             END;
         END IF;
+        END;
     ELSE
         BEGIN
             SELECT CONCAT(pAdminUserName, " isn't an admin") AS MESSAGE;
@@ -1366,28 +1728,3 @@ START TRANSACTION;
 COMMIT;
 END//
 DELIMITER ;
-
-
-DELIMITER \\
-CREATE PROCEDURE DIAGNOSTIC(IN Context VARCHAR(255))
-BEGIN
-
-END\\
-
-CREATE PROCEDURE INSERTCHECK()
-BEGIN 
-    DECLARE exit handler for sqlexception
-	BEGIN
-      ROLLBACK;
-      
-      -- SHOW ERRORS LIMIT 1 ;
-        GET DIAGNOSTICS CONDITION 1
-        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        
-        SELECT Context, @P1 AS ERROR_NUM, @P2 AS MESSAGE;
-    END;
-    DECLARE exit handler for sqlwarning
-	BEGIN
-     ROLLBACK;
-     SHOW WARNINGS LIMIT 1;
-    END;

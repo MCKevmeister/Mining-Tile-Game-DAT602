@@ -70,6 +70,8 @@ namespace miningTileGame
             paramUserPassword.Value = pPassword;
             ParamList.Add(paramUsername);
             ParamList.Add(paramUserPassword);
+            //var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "Call userLogin(@Username, @UserPassword)", ParamList.ToArray());
+            //return aDataSet;
             try
             {
                 var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "Call userLogin(@Username, @UserPassword)", ParamList.ToArray());
@@ -120,7 +122,7 @@ namespace miningTileGame
             //return aDataSet;
             try
             {
-                 var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL editUser(@Username, @NewUsername, @NewUserPassword, @NewUserEmail)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL editUser(@Username, @NewUsername, @NewUserPassword, @NewUserEmail)", ParamList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)

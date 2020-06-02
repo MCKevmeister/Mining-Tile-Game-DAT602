@@ -13,8 +13,6 @@ namespace miningTileGame
 
         private static void menu()
         {
-            Console.WriteLine("The current User is " + ClsTest.UserName.ToString());
-            Console.WriteLine("The current Character is " + ClsTest.CharacterName.ToString());
             string menuText = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Test Application for Tile Game~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
                         "\n1) Test Conneciton with server\n2) Register a User\n3) Login with a user account\n4) Exit";
             Console.WriteLine(menuText);
@@ -35,7 +33,6 @@ namespace miningTileGame
                     Console.WriteLine("Please enter a Password");
                     string register_password = Console.ReadLine();
                     DataSet RegisterUser = ClsTest.registerUser(register_username, register_email, register_password);
-                    if (RegisterUser != null)
                         foreach (DataRow aRow in RegisterUser.Tables[0].Rows)
                         {
                             Console.WriteLine(aRow["Message"]);
@@ -45,21 +42,26 @@ namespace miningTileGame
 
                 case "3": //Login with a user
                     Console.WriteLine("Please enter a username:");
-                    String login_username = Console.ReadLine();
-                    Console.WriteLine("Please enter password for " + login_username + ":");
-                    String login_password = Console.ReadLine();
-                    DataSet UserLogin = ClsTest.userLogin(login_username, login_password);
+                    String loginUsername = Console.ReadLine();
+                    Console.WriteLine("Please enter password for " + loginUsername + ":");
+                    String loginPassword = Console.ReadLine();
+                    DataSet UserLogin = ClsTest.userLogin(loginUsername, loginPassword);
                     foreach (DataRow aRow in UserLogin.Tables[0].Rows)
                     {
-                        Console.WriteLine(aRow["Message"]);
+                        // Console.WriteLine(aRow["Message"]);
+                        if (aRow["Message"].ToString() ==  loginUsername +" is now Online") // sucess message
+                        {
+                            ClsTest.UserName = loginUsername; // set username inside cls test
+                            Console.WriteLine(aRow["Message"]);
+                            userMenu();
+                        }
+                        else
+                        {
+                            Console.WriteLine(aRow["Message"]);
+                            menu();
+                        }
                     }
-                    if (ClsTest.UserName == null)
-                    {
-                        menu();
-                        break;
-                    }
-                    userMenu();
-                    break;
+                   break;
 
                 case "4": //Exit
                     Environment.Exit(0);
@@ -81,16 +83,29 @@ namespace miningTileGame
             {
                 case "1": //Edit User
                     Console.WriteLine("Please enter a new username");
-                    var editUserName = Console.ReadLine();
+                    string editUserName = Console.ReadLine();
                     Console.WriteLine("Please enter a new password");
-                    var editUserPassword = Console.ReadLine();
+                    string editUserPassword = Console.ReadLine();
                     Console.WriteLine("Please enter a new email");
-                    var editUserEmail = Console.ReadLine();
+                    string editUserEmail = Console.ReadLine();
                     DataSet editUser = ClsTest.editUser(editUserName, editUserPassword, editUserEmail);
-                    DataSet deleteUser = ClsTest.deleteUser();
-                    foreach (DataRow aRow in deleteUser.Tables[0].Rows)
+                    //foreach (DataRow aRow in editUser.Tables[0].Rows)
+                    //{
+                    //    Console.WriteLine(aRow["Message"]);
+                    //}
+                    foreach (DataRow aRow in editUser.Tables[0].Rows)
                     {
-                        Console.WriteLine(aRow["Message"]);
+                        if (aRow["Message"].ToString() == "User details have been updated") // sucess message
+                        {
+                            ClsTest.UserName = editUserName; // set username inside cls test
+                            Console.WriteLine(aRow["Message"]);
+                            userMenu();
+                        }
+                        else
+                        {
+                            Console.WriteLine(aRow["Message"]);
+                            menu();
+                        }
                     }
                     break;
                 case "2": //Delete User
@@ -101,13 +116,18 @@ namespace miningTileGame
                         DataSet deleteUser = ClsTest.deleteUser();
                         foreach (DataRow aRow in deleteUser.Tables[0].Rows)
                         {
-                            Console.WriteLine(aRow["Message"]);
+                            if (aRow["Message"].ToString() == ClsTest.UserName + " has been deleted") // sucess message
+                            {
+                                ClsTest.UserName = null; // set username inside cls test
+                                Console.WriteLine(aRow["Message"]);
+                                menu();
+                            }
+                            else
+                            {
+                                Console.WriteLine(aRow["Message"]);
+                                userMenu();
+                            }
                         }
-                        menu();
-                    }
-                    else
-                    {
-                        userMenu();
                     }
                     break;
 
@@ -118,25 +138,25 @@ namespace miningTileGame
                     string[] skills = new string[3];
                     for (int i = 0; i < 4; i++)
                     {
-                        string skillResponse = Console.ReadLine();
+                        int skillResponse = Console.Read();
                         switch (skillResponse)
                         {
-                            case "1":
-                                skills[i] = "Miner";
-                                break;
-                            case "2":
+                            case 1:
+                                skills[1] = "Miner";
+                                break; 
+                            case 2:
                                 skills[i] = "Gatherer";
                                 break;
-                            case "3":
+                            case 3:
                                 skills[i] = "Fisher";
                                 break;
-                            case "4":
+                            case 4:
                                 skills[i] = "Woodcutter";
                                 break;
-                            case "5":
+                            case 5:
                                 skills[i] = "Archer";
                                 break;
-                            case "6":
+                            case 6:
                                 skills[i] = "Smith";
                                 break;
                             default:
@@ -145,7 +165,7 @@ namespace miningTileGame
                         }
                     } // not sure if this will work as I expect will test later TODO
 
-                    DataSet createCharacter = ClsTest.createCharacter(characterName, skills[0], skills[1], skills[3], skills[4]);
+                    DataSet createCharacter = ClsTest.createCharacter(characterName, skills[0], skills[1], skills[3], skills[4]); //ystem.Console.WriteLine("Element({0},{1})={2}", i, j, arr[i, j]);
                     foreach (DataRow aRow in createCharacter.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
