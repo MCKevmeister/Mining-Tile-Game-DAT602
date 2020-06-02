@@ -434,7 +434,7 @@ BEGIN
         IF (lcUserName IS NULL)
         THEN
             BEGIN
-                SELECT "Username doesn't exist" AS `MESSAGE`;
+                SELECT "Username doesn't exist" AS `MESSAGE`, "" AS `username`;
             END;
         ELSEIF ((lcUserName = pUserName) AND (lcUserPassword <> pUserPassword)) THEN
             BEGIN
@@ -450,7 +450,7 @@ BEGIN
                 UPDATE tblUser
                 SET `isLocked` = 1
                 WHERE `username` = pUserName;
-                SELECT "User has been is locked out. Please contact an administrator to get this user unlocked" AS `MESSAGE`;
+                SELECT "User has been is locked out. Please contact an administrator to get this user unlocked" AS `MESSAGE`, "" AS `username`;
             END;
         ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND (lcUserIsLocked = 0) AND (lcUserLoginAttempts < 5))
         THEN
@@ -458,12 +458,15 @@ BEGIN
                 UPDATE tbluser
                 SET `isOnline` = true, `loginAttempts` = 0
                 WHERE (`username` = pUserName AND `userPassword` = pUserPassword);
-                SELECT CONCAT(pUserName, " is now Online") AS `MESSAGE`;
+                SELECT CONCAT(pUserName, " is now Online") AS `MESSAGE`, `pUserName` as username;
             END;
         END IF;
 	COMMIT;
 END//
 DELIMITER ;
+
+select * from tblUser;
+Call 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Edit User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1363,3 +1366,28 @@ START TRANSACTION;
 COMMIT;
 END//
 DELIMITER ;
+
+
+DELIMITER \\
+CREATE PROCEDURE DIAGNOSTIC(IN Context VARCHAR(255))
+BEGIN
+
+END\\
+
+CREATE PROCEDURE INSERTCHECK()
+BEGIN 
+    DECLARE exit handler for sqlexception
+	BEGIN
+      ROLLBACK;
+      
+      -- SHOW ERRORS LIMIT 1 ;
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        
+        SELECT Context, @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+    END;
+    DECLARE exit handler for sqlwarning
+	BEGIN
+     ROLLBACK;
+     SHOW WARNINGS LIMIT 1;
+    END;

@@ -13,6 +13,8 @@ namespace miningTileGame
 
         private static void menu()
         {
+            Console.WriteLine("The current User is " + ClsTest.UserName.ToString());
+            Console.WriteLine("The current Character is " + ClsTest.CharacterName.ToString());
             string menuText = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Test Application for Tile Game~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
                         "\n1) Test Conneciton with server\n2) Register a User\n3) Login with a user account\n4) Exit";
             Console.WriteLine(menuText);
@@ -85,13 +87,12 @@ namespace miningTileGame
                     Console.WriteLine("Please enter a new email");
                     var editUserEmail = Console.ReadLine();
                     DataSet editUser = ClsTest.editUser(editUserName, editUserPassword, editUserEmail);
-                    foreach (DataRow aRow in editUser.Tables[0].Rows)
+                    DataSet deleteUser = ClsTest.deleteUser();
+                    foreach (DataRow aRow in deleteUser.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
                     }
-                    userMenu();
                     break;
-
                 case "2": //Delete User
                     Console.WriteLine("Are you sure you want to delete this user?\n\n1) Yes\n2) No");
                     string deleteUserResponse = Console.ReadLine();
@@ -102,8 +103,12 @@ namespace miningTileGame
                         {
                             Console.WriteLine(aRow["Message"]);
                         }
+                        menu();
                     }
-                    menu();
+                    else
+                    {
+                        userMenu();
+                    }
                     break;
 
                 case "3": //User Creates Character
@@ -133,6 +138,9 @@ namespace miningTileGame
                                 break;
                             case "6":
                                 skills[i] = "Smith";
+                                break;
+                            default:
+                                i--;
                                 break;
                         }
                     } // not sure if this will work as I expect will test later TODO
@@ -168,7 +176,7 @@ namespace miningTileGame
                     Console.WriteLine("What character do you want to play with?");
                     string characterChoice = Console.ReadLine();
                     _ = ClsTest.selectCharacter(characterChoice); // DataSet characterChoose =
-                    string characterNameCheck = ClsTest.getCharacterName().ToString();
+                    string characterNameCheck = ClsTest.CharacterName.ToString();
                     if (characterNameCheck != null)
                     {
                         characterMenu();
@@ -202,14 +210,18 @@ namespace miningTileGame
         }
         private static void characterMenu()
         {
-            Console.WriteLine("The current Character is" + ClsTest.getCharacterName().ToString());
+            Console.WriteLine("The current Character is" + ClsTest.CharacterName.ToString());
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Character Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
             "1) Create Game\n2) Character Chats\n3) Return to Game in Progress\n4)  User Menu\n5) Main Menu\n6) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
                 case "1": // Create Game
-                          // TODO
+                    DataSet onlineCharacter = ClsTest.onlineCharacters();
+                    foreach (DataRow aRow in onlineCharacter.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
                     gameMenu();
                     break;
 
