@@ -89,10 +89,6 @@ namespace miningTileGame
                     Console.WriteLine("Please enter a new email");
                     string editUserEmail = Console.ReadLine();
                     DataSet editUser = ClsTest.editUser(editUserName, editUserPassword, editUserEmail);
-                    //foreach (DataRow aRow in editUser.Tables[0].Rows)
-                    //{
-                    //    Console.WriteLine(aRow["Message"]);
-                    //}
                     foreach (DataRow aRow in editUser.Tables[0].Rows)
                     {
                         if (aRow["Message"].ToString() == "User details have been updated") // sucess message
@@ -104,10 +100,10 @@ namespace miningTileGame
                         else
                         {
                             Console.WriteLine(aRow["Message"]);
-                            menu();
-                        }
+                            userMenu();                        }
                     }
                     break;
+
                 case "2": //Delete User
                     Console.WriteLine("Are you sure you want to delete this user?\n\n1) Yes\n2) No");
                     string deleteUserResponse = Console.ReadLine();
@@ -163,9 +159,8 @@ namespace miningTileGame
                                 i--;
                                 break;
                         }
-                    } // not sure if this will work as I expect will test later TODO
-
-                    DataSet createCharacter = ClsTest.createCharacter(characterName, skills[0], skills[1], skills[3], skills[4]); //ystem.Console.WriteLine("Element({0},{1})={2}", i, j, arr[i, j]);
+                    } 
+                    DataSet createCharacter = ClsTest.createCharacter(characterName, skills[0], skills[1], skills[3], skills[4]);  //ystem.Console.WriteLine("Element({0},{1})={2}", i, j, arr[i, j]);
                     foreach (DataRow aRow in createCharacter.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
@@ -185,25 +180,25 @@ namespace miningTileGame
                     }
                     userMenu();
                     break;
-
                 case "5": //Select Character to play game
                     Console.WriteLine("These are you current Characters");
                     DataSet currentCharacters = ClsTest.getAllUserCharacters();
                     foreach (DataRow aRow in currentCharacters.Tables[0].Rows)
                     {
-                        Console.WriteLine(aRow["userName"]);
+                        Console.WriteLine(aRow["characterName"]);
                     }
                     Console.WriteLine("What character do you want to play with?");
-                    string characterChoice = Console.ReadLine();
-                    _ = ClsTest.selectCharacter(characterChoice); // DataSet characterChoose =
-                    string characterNameCheck = ClsTest.CharacterName.ToString();
-                    if (characterNameCheck != null)
+                    string chosenCharacter = Console.ReadLine();
+                    DataSet characterChoice = ClsTest.selectCharacter(chosenCharacter);
+                    foreach (DataRow aRow in characterChoice.Tables[0].Rows)
                     {
-                        characterMenu();
-                    }
-                    else
-                    {
-                        foreach (DataRow aRow in currentCharacters.Tables[0].Rows)
+                        if (aRow["Message"].ToString() == chosenCharacter + " is now active") // sucess message
+                            {
+                            ClsTest.CharacterName = characterChoice; // set character inside cls test
+                            Console.WriteLine(aRow["Message"]);
+                            characterMenu();
+                        }
+                        else
                         {
                             Console.WriteLine(aRow["Message"]);
                             userMenu();
@@ -212,10 +207,21 @@ namespace miningTileGame
                     break;
 
                 case "6": //Admin Menu
-                    adminMenu();
-                    break;
+                   DataSet adminCheck = ClsTest.checkIfAdmin();
+                    foreach (DataRow aRow in adminCheck.Tables[0].Rows)
+                        if (aRow["Message"].ToString() == ClsTest.UserName.ToString() + " is an Admin")
+                        {
+                            adminMenu();
+                        }
+                        else
+                        {
+                            userMenu();
+                        }
+                        break;
 
-                case "7": //Main Menu
+                case "7": //Log off
+                    ClsTest.userLogoff();
+                    ClsTest.UserName = "";
                     menu();
                     break;
 
@@ -237,24 +243,80 @@ namespace miningTileGame
             switch (response)
             {
                 case "1": // Create Game
+                    Console.WriteLine("Who do you want to play against?");
                     DataSet onlineCharacter = ClsTest.onlineCharacters();
                     foreach (DataRow aRow in onlineCharacter.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
                     }
-                    gameMenu();
+                    string opponent = Console.ReadLine();
+                    Console.WriteLine("What map do you want to play on?");
+                    DataSet allMaps = ClsTest.getMaps();
+                    foreach(DataRow aRow in onlineCharacter.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
+                    string map = Console.ReadLine();
+                    DataSet createGame = ClsTest.createGame(opponent, map);
+                    foreach (DataRow aRow in createGame.Tables[0].Rows)
+                    {
+                        if (aRow["Message"].ToString() == ClsTest.CharacterName + " and " + opponent + " are now playing on " + map) //
+                        {
+                            ClsTest.MapName = map;
+                            Console.WriteLine(aRow["Message"]);
+                            gameMenu();
+                        }
+                        else
+                        {
+                            Console.WriteLine(aRow["Message"]);
+                            characterMenu();
+                        }
+                    }
                     break;
 
                 case "2": // Character Chats
-                    // TODO
-                    characterMenu();
+                    Console.WriteLine("What do you want to say?");
+                    string message = Console.ReadLine();
+                    DataSet characterChats = ClsTest.characterChats(message);
+                    foreach (DataRow aRow in characterChats.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
                     break;
 
-                case "3": //Return to Game in Progress
-                    gameMenu();
+                case "3": //Return to Game
+                     Console.WriteLine("Which game do you want to return to?");
+                     DataSet currentGames = ClsTest.getMapsCharacterCanRejoin();
+                     foreach (DataRow aRow in currentGames.Tables[0].Rows)
+                     {
+                         Console.WriteLine(aRow["Message"]);
+                     }
+                    string mapResponse  = Console.ReadLine();
+                    Console.WriteLine("If your character needs to move to rejoin, Which direciton do you want to move");
+                    string direction = Console.ReadLine();
+                    DataSet returnToMap = ClsTest.characterReturnToMap(mapResponse, direction);
+                    foreach (DataRow aRow in returnToMap.Tables[0].Rows)
+                    {
+                        if (aRow["Message"].ToString() == ClsTest.CharacterName +" has rejoined " + mapResponse + ". Score reset") //
+                        {
+                            ClsTest.MapName = mapResponse;
+                            Console.WriteLine(aRow["Message"]);
+                            gameMenu();
+                        }
+                        else
+                        {
+                            Console.WriteLine(aRow["Message"]);
+                            characterMenu();
+                        }
+                    }
                     break;
 
-                case "4": //User Menu
+                case "4": //Change Character
+                    DataSet changeCharacter = ClsTest.changeCharacter();
+                    foreach (DataRow aRow in changeCharacter.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
                     userMenu();
                     break;
 
@@ -269,29 +331,49 @@ namespace miningTileGame
         }
         private static void gameMenu()
         {
-            Console.Write("1) Leave Game\n2) Character makes Move\n3) Character picks up item\n4) Player Uses Item on Mine\n5)Leave Game\n6)Exit Game 7)Exit Program");
+            Console.Write("1) Leave Game\n2) Character makes Move\n3) Character picks up item\n4) Player Uses Item on Mine\n7) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
                 case "1": // Leave Game
+                    DataSet leaveCharacterMap = ClsTest.leaveCharacterMap();
+                    foreach (DataRow aRow in leaveCharacterMap.Tables[0].Rows)
+                    {
+                        if (aRow["Message"].ToString() == ClsTest.CharacterName +  " has left the game but can rejoin") //
+                        {
+                            ClsTest.MapName = "";
+                            Console.WriteLine(aRow["Message"]);
+                            characterMenu();
+                        }
+                        else
+                        {
+                            Console.WriteLine(aRow["Message"]);
+                            gameMenu();
+                        }
+                    }
                     break;
 
-                case "2": // 
-                    break;
-
-                case "3": //Return to Game in Progress
+                case "2": // Character makes Move
+                    Console.WriteLine("Which direciton do you want to move?");
+                    string direction = Console.ReadLine();
+                    DataSet characterMakesMove = ClsTest.characterMakesMove(direction);
+                    foreach (DataRow aRow in characterMakesMove.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
                     gameMenu();
                     break;
 
-                case "4": //User Menu -- redo /update
-                    userMenu();
+                case "3": //Character picks up item
+                    DataSet characterPicksUpItem = ClsTest.characterPicksUpItem();
+                    foreach (DataRow aRow in characterPicksUpItem.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
+                    gameMenu();
                     break;
 
-                case "5": // Main Menu
-                    menu();
-                    break;
-
-                case "6": // Exit Program
+                case "5": // Exit Program
                     Environment.Exit(0);
                     break;
             }
@@ -304,10 +386,18 @@ namespace miningTileGame
             switch (response)
             {
                 case "1": //Admin Kills Running Game
-                            //Get list of running games
-                            //Print
-                            //select game to "kill"
-                            //TODO  
+                    Console.WriteLine("Which game do you want to kill?");
+                    DataSet activeGames = ClsTest.getActiveGames();
+                    foreach (DataRow aRow in activeGames.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["mapName"]);
+                    }
+                    string gameToKill = Console.ReadLine();
+                    DataSet adminKillGame = ClsTest.adminKillGame(gameToKill);
+                    foreach (DataRow aRow in adminKillGame.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["MESSAGE"]);
+                    }
                     adminMenu();
                     break;
 
@@ -329,7 +419,6 @@ namespace miningTileGame
                     {
                         registerAdmin = false;
                     }
-
                     DataSet RegisterUser = ClsTest.adminAddUser(registerUserName, registerEmail, registerPassword, registerAdmin);
                     foreach (DataRow aRow in RegisterUser.Tables[0].Rows)
                     {
@@ -339,7 +428,42 @@ namespace miningTileGame
                     break;
 
                 case "3": //Admin edits user
-                    //TODO
+                    Console.WriteLine("~~~~List of All Users~~~~");
+                    DataSet allUsersEdit = ClsTest.adminGetAllUsers();
+                    foreach (DataRow aRow in allUsersEdit.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["username"]);
+                    }
+                    Console.WriteLine("Please enter the name of the user you want to edit?");
+                    string userToEdit = Console.ReadLine();
+                    Console.WriteLine("Please enter the new username");
+                    string newUserName = Console.ReadLine();
+                    Console.WriteLine("Please enter the new password");
+                    string newUserPassword = Console.ReadLine();
+                    Console.WriteLine("Please enter the new email");
+                    string newUserEmail = Console.ReadLine();
+                    Console.WriteLine("Please enter the new login attempts amount");
+                    int newLoginAttempts = Convert.ToInt16(Console.ReadLine());
+                    Console.WriteLine("Please enter the new user score");
+                    int newUserScore = Convert.ToInt16(Console.ReadLine());
+                    Console.WriteLine("Please enter the new locked status");
+                    int newIsLocked = Convert.ToInt16(Console.ReadLine());
+                    Console.WriteLine("Is this user an admin?\n 1) Yes\n2) No");
+                   string responseIsAdmin = Console.ReadLine();
+                    bool newIsAdmin
+                    if (responseIsAdmin == "1")
+                    {
+                        newIsAdmin = true;
+                    }
+                    else
+                    {
+                        newIsAdmin = false;
+                    }
+                    DataSet adminEditUser = ClsTest.adminEditUser(userToEdit, newUserName, newUserEmail, newUserPassword, newLoginAttempts, newUserScore, newIsLocked, newIsAdmin);
+                    foreach (DataRow aRow in adminEditUser.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["MESSAGE"]);
+                    }
                     adminMenu();
                     break;
 
@@ -350,7 +474,7 @@ namespace miningTileGame
                     {
                         Console.WriteLine(aRow["username"]);
                     }
-                    Console.WriteLine("Please type the name of the user you want to delete?");
+                    Console.WriteLine("Please enter the name of the user you want to delete?");
                     var userToDelete = Console.ReadLine();
                     DataSet deleteUser = ClsTest.adminDeleteUser(userToDelete);
                     foreach (DataRow aRow in deleteUser.Tables[0].Rows)
