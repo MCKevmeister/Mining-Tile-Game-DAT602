@@ -408,7 +408,6 @@ BEGIN
             SELECT "registerUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         IF EXISTS (SELECT * FROM tblUser WHERE `username` = pUserName OR `email` = pEmail) THEN
             BEGIN
@@ -441,7 +440,6 @@ BEGIN
             SELECT "userLogin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
 	START TRANSACTION;
         SELECT `username`, `userPassword`, `islocked`, `loginAttempts`
         FROM tblUser
@@ -450,7 +448,7 @@ BEGIN
         IF (lcUserName IS NULL)
         THEN
             BEGIN
-                SELECT "Username doesn't exist" AS `MESSAGE`; -- , "" AS `username`;
+                SELECT "Username doesn't exist" AS MESSAGE;
             END;
         ELSEIF ((lcUserName = pUserName) AND (lcUserPassword <> pUserPassword)) THEN
             BEGIN
@@ -458,7 +456,7 @@ BEGIN
                 SET `loginAttempts` = lcUserLoginAttempts + 1
                 WHERE `username` = pUserName;
                 SET lcUserLoginAttempts = lcUserLoginAttempts + 1;
-                SELECT "Incorrect Password" AS `MESSAGE`; -- , `username`;
+                SELECT "Incorrect Password" AS MESSAGE;
             END;
         ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND ((lcUserLoginAttempts >= 5) OR (lcUserIsLocked)))
         THEN
@@ -466,15 +464,15 @@ BEGIN
                 UPDATE tblUser
                 SET `isLocked` = 1
                 WHERE `username` = pUserName;
-                SELECT "User has been is locked out. Please contact an administrator to get this user unlocked" AS `MESSAGE`; -- , "" AS `username`;
-            END;
+                SELECT "User has been is locked out. Please contact an administrator to get this user unlocked" AS MESSAGE;
+            END; 
         ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND (lcUserIsLocked = 0) AND (lcUserLoginAttempts < 5))
         THEN
             BEGIN
                 UPDATE tbluser
                 SET `isOnline` = true, `loginAttempts` = 0
                 WHERE (`username` = pUserName AND `userPassword` = pUserPassword);
-                SELECT CONCAT(pUserName, " is now Online") AS `MESSAGE`, `pUserName` as username;
+                SELECT CONCAT(pUserName, " is now Online") AS MESSAGE;
             END;
         END IF;
 	COMMIT;
@@ -482,7 +480,7 @@ END//
 DELIMITER ;
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Edit User 
+-- Log off 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DROP PROCEDURE IF EXISTS userLogoff;
 DELIMITER //
@@ -527,12 +525,12 @@ BEGIN
 			END;
 		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName) THEN
 			BEGIN
-				SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
+				SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS Message;
 			END;
 		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
 		THEN
 			BEGIN
-				SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
+				SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS Message;
 			END;
 		ELSE
 			BEGIN
@@ -572,7 +570,7 @@ BEGIN
 END//
 DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- User Creates Character (inlcuding character skills created) WORKING
+-- User Creates Character (inlcuding character skills created)
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS createCharacter//
@@ -585,7 +583,6 @@ BEGIN
             SELECT "createCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         IF EXISTS(SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName)
         THEN
@@ -620,7 +617,6 @@ BEGIN
             SELECT "getAllUserCharacters", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         SELECT `characterName`
         FROM tblCharacter
@@ -640,7 +636,6 @@ BEGIN
         SELECT "deleteCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `username` = pUserName)) THEN
 			BEGIN
@@ -670,7 +665,6 @@ BEGIN
         SELECT "selectCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `userName` = pUserName)) THEN
             BEGIN
@@ -702,7 +696,6 @@ BEGIN
         SELECT "selectCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         IF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacterName AND `userName` = pUserName and `isActive` = 1)) THEN
             BEGIN
@@ -733,7 +726,6 @@ BEGIN
         SELECT "onlineCharacters", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         SELECT `characterName`
         FROM tblcharacter
@@ -755,7 +747,6 @@ BEGIN
         SELECT "getMaps", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         SELECT `mapName`
         FROM tblmap;
@@ -807,7 +798,6 @@ BEGIN
         SELECT "createGame", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION; 
 		SELECT COUNT(`itemName`) FROM tblItem INTO itemCount;
         SELECT `homeTileXLocation`, `homeTileYLocation`
@@ -820,7 +810,7 @@ BEGIN
         INTO lcXMax, lcYMax;
         IF (EXISTS(SELECT * FROM tblcharacterMap WHERE `characterName` = pCharacter1) OR (EXISTS(SELECT * FROM tblcharacterMap WHERE `characterName` = pCharacter2))) THEN
 			BEGIN
-				SELECT "Cannot make game, characters are already playing" AS MESSAGE; -- if character already playing a gamealready plaing a game
+				SELECT "Cannot make game, characters are already playing" AS MESSAGE;
 			END;
         ELSEIF (EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter1) AND 
 			EXISTS (SELECT * FROM tblCharacter WHERE `characterName` = pCharacter2 AND `isActive` = 1) AND 
@@ -829,7 +819,7 @@ BEGIN
                 INSERT INTO tblCharacterMap (`characterName`, `mapName`)
                 VALUES(pCharacter1, pMap), (pCharacter2, pMap);
                 DELETE FROM tblCharacterTile 
-				WHERE `characterName` = pCharacter1 AND `characterName` = pCharacter2; -- feel hacky, ensures that characters are no longer playing any other games
+				WHERE `characterName` = pCharacter1 AND `characterName` = pCharacter2;
                 INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`, `isPlaying`)
                 VALUES (pCharacter1, pMap, lcXHome, lcYHome, 1), (pCharacter2, pMap, lcXHome, lcYHome, 1);
                 BEGIN
@@ -854,7 +844,7 @@ BEGIN
                     LEAVE spawnItem;
                 END LOOP spawnItem;
                 spawnMine: LOOP
-                    IF (i < lcXMax) THEN -- using X map size arbitarily to not spawn that many mines for a certian map size
+                    IF (i < lcXMax) THEN
                             SELECT round(RAND() * (lcXMax)) + 1 into xSpawn;
                             SELECT round(RAND() * (lcXMax)) + 1 into ySpawn;
 		                    SELECT round(RAND() * (itemCount)) + 1 into mineSpawn;
@@ -902,7 +892,6 @@ BEGIN
         SELECT "leaveCharacterMap", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         DELETE FROM tblCharacterMap
         WHERE `characterName` = pCharacterName AND `mapName` = pMap;
@@ -954,7 +943,6 @@ BEGIN
         SELECT "getMapsCharacterCanRejoin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION; 
         SELECT `mapName` 
         FROM tblCharacterTile 
@@ -997,15 +985,15 @@ BEGIN
         END;
     ELSE
         BEGIN
-            IF (EXISTS(SELECT *  -- check if tile empty
+            IF (EXISTS(SELECT *
                 FROM tblCharacterTile
                 WHERE ((`characterName`<> pCharacterName) AND
                 (`mapName` = pMap) AND
                 (`xLocation` = lcCharacterX) AND
                 (`xLocation` <> lcHomeX) AND
-                (`yLocation` <> lcHomeY) AND -- check if on home tile
+                (`yLocation` <> lcHomeY) AND
                 (`yLocation` = lcCharacterY)))) THEN
-                    BEGIN -- tile is occupied by another character , need to choose empty tile
+                    BEGIN
                         IF(pDirection = NULL) THEN
                             BEGIN
                                 SELECT ("This tile is occupied. Please choose an orthogonally adjacent tile to re-enter this game on") AS MESSAGE;
@@ -1028,7 +1016,7 @@ BEGIN
                                     BEGIN
                                         INSERT INTO tblCharacterMap 
                                         VALUES (pCharacterName, pMap, 0);
-                                        SELECT CONCAT(pCharacterName, " has rejoined ", pMap, ". Score reset") AS MESSAGE; -- check if character x and y is inside coords of map
+                                        SELECT CONCAT(pCharacterName, " has rejoined ", pMap, ". Score reset") AS MESSAGE;
                                     END;
                                 ELSE
                                     BEGIN
@@ -1063,7 +1051,6 @@ BEGIN
             SELECT "characterMakesMove", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
     IF (EXISTS(SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName AND `mapName` = pMapName)) THEN
         IF (pDirection = "left") THEN
@@ -1078,7 +1065,7 @@ BEGIN
                     SELECT * 
 					FROM tblCharacterTile c, tblCharacterTile t
                     WHERE 
-                    (c.characterName = pCharacterName AND -- check if character exists, no character exists at new x and y and and map x and y are inside map boundary
+                    (c.characterName = pCharacterName AND
                     c.xLocation - 1 = t.xLocation AND
                     c.yLocation = t.yLocation  AND
                     c.mapName = t.mapName AND
@@ -1091,7 +1078,7 @@ BEGIN
                     UPDATE tblCharacterTile
                     SET `xLocation` = `xLocation` - 1
                     WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-                    SELECT CONCAT(pCharacterName, ' moved Left') AS MESSAGE, pCharacterName as characterName;
+                    SELECT CONCAT(pCharacterName, ' moved Left') AS MESSAGE;
                 END; 
             ELSE
                 SELECT 'Not able to move left' AS MESSAGE;
@@ -1121,7 +1108,7 @@ BEGIN
                         UPDATE tblCharacterTile
                         SET `xLocation` = `xLocation` + 1
                         WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-                        SELECT CONCAT(pCharacterName, ' moved right') AS MESSAGE, pCharacterName as characterName;
+                        SELECT CONCAT(pCharacterName, ' moved right') AS MESSAGE;
                     END; 
             ELSE
                 BEGIN
@@ -1151,7 +1138,7 @@ BEGIN
                     SET `yLocation` = `yLocation` - 1
                     WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
                     
-                    SELECT CONCAT(pCharacterName, ' moved up') AS MESSAGE, pCharacterName as characterName; -- do i need to pass back the character name??
+                    SELECT CONCAT(pCharacterName, ' moved up') AS MESSAGE;
                 END; 
             ELSE
                 SELECT 'Not able to move up' AS MESSAGE;
@@ -1171,7 +1158,7 @@ BEGIN
                     WHERE 
                     (c.characterName = pCharacterName) AND 
                     (c.xLocation = t.xLocation AND c.yLocation + 1 = t.yLocation) AND c.isPlaying = 1 AND t.isPlaying = 1 AND
-                    (c.mapName = t.mapName AND c.characterName <> t.characterName)))) -- map max y-size
+                    (c.mapName = t.mapName AND c.characterName <> t.characterName))))
                 THEN
                 BEGIN
                     UPDATE tblCharacter
@@ -1180,7 +1167,7 @@ BEGIN
                     UPDATE tblCharacterTile
                     SET `yLocation` = `yLocation` + 1
                     WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);               
-                    SELECT CONCAT(pCharacterName, ' moved down') AS MESSAGE, pCharacterName as characterName;
+                    SELECT CONCAT(pCharacterName, ' moved down') AS MESSAGE;
                 END; 
             ELSE
                 SELECT 'Not able to move down' AS MESSAGE;
@@ -1304,7 +1291,6 @@ BEGIN
             SELECT "useItem", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         SELECT `xPosition`, `yPosition`
         FROM tblCharacterTile
@@ -1313,16 +1299,16 @@ BEGIN
         SELECT `mineName` FROM tblMineTile
         WHERE ((`mapName` = pMap) AND (`xLocation` = lcX) AND (`yLocation` = lcY))
         INTO lcMine;
-        IF (lcMine is NULL) THEN -- check if tile has mine
+        IF (lcMine is NULL) THEN
             BEGIN   
                 SELECT "There is nothing to mine on this tile" AS MESSAGE;
             END;
-        ELSEIF (EXISTS (SELECT * FROM tblMine WHERE (`mineName` = lcMine AND `minedBy` = pItemName))) THEN -- if true, check if item matches mine
+        ELSEIF (EXISTS (SELECT * FROM tblMine WHERE (`mineName` = lcMine AND `minedBy` = pItemName))) THEN
             BEGIN
                 UPDATE tblCharacterItem
                 SET `itemDurability` = `itemDurability` - 1
-                WHERE `itemName` = pItemName;-- this will do it for all items a character has of the same name...... grrr
-                UPDATE tblCharacter -- Add points to character and user
+                WHERE `itemName` = pItemName; -- this will do it for all items a character has of the same name
+                UPDATE tblCharacter
                 SET `characterScoreTotal` = `characterScoreTotal` + 1;
                 UPDATE tblCharacterMap
                 SET `score` = `score` + 1;
@@ -1358,7 +1344,6 @@ BEGIN
             SELECT "characterChats", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         INSERT INTO tblChat
         VALUES (pCharacterName, pMessage, NOW());
@@ -1380,12 +1365,16 @@ BEGIN
             SELECT "checkIfAdmin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
-        IF EXISTS (SELECT isAdmin FROM tblUser WHERE `username` = pUserName;) THEN
+        IF EXISTS (SELECT isAdmin FROM tblUser WHERE `username` = pUserName AND `isAdmin` = 1) THEN
             BEGIN
                 SELECT CONCAT(pUserName, " is an Admin") AS MESSAGE;
             END;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pUsername, " is not an Admin") AS MESSAGE;
+            END;
+        END IF;
     COMMIT;
 END//
 DELIMITER ;
@@ -1405,7 +1394,6 @@ BEGIN
             SELECT "getActiveGames", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
     IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
         BEGIN

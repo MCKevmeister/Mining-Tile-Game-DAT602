@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
-
+using System.Linq;
 
 namespace miningTileGame
 {
@@ -77,7 +78,7 @@ namespace miningTileGame
             //string currentUser = ClsTest.getUserName().ToString();
             Console.WriteLine("The current User is " + ClsTest.UserName.ToString());
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~User Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-                "\n1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Admin Menu\n7) Main Menu\n8) Exit Program");
+                "\n1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Admin Menu\n7) Log off\n8) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
@@ -107,7 +108,7 @@ namespace miningTileGame
                 case "2": //Delete User
                     Console.WriteLine("Are you sure you want to delete this user?\n\n1) Yes\n2) No");
                     string deleteUserResponse = Console.ReadLine();
-                    if (Equals(deleteUserResponse, 1))
+                    if (deleteUserResponse == "1")
                     {
                         DataSet deleteUser = ClsTest.deleteUser();
                         foreach (DataRow aRow in deleteUser.Tables[0].Rows)
@@ -125,42 +126,50 @@ namespace miningTileGame
                             }
                         }
                     }
+                    else
+                    {
+                        userMenu();
+                    }
                     break;
 
                 case "3": //User Creates Character
                     Console.WriteLine("What is the name of the Character?");
                     string characterName = Console.ReadLine();
-                    Console.WriteLine("Please choose 4 skills by typing in the numbe\n1) Miner\n2) Gatherer\n3) Fisher\n4) Woodcutter\n5)Archer\n6)Smith");
-                    string[] skills = new string[3];
-                    for (int i = 0; i < 4; i++)
+                    Console.WriteLine("Please choose 4 skills by typing in the number\n1) Miner\n2) Gatherer\n3) Fisher\n4) Woodcutter\n5)Archer\n6)Smith");
+                    var skills = new List<string>();
+                    for (int i = 0; i < 4; i++) // loop 4 times
                     {
-                        int skillResponse = Console.Read();
+                        string skillResponse = Console.ReadLine();
                         switch (skillResponse)
                         {
-                            case 1:
-                                skills[1] = "Miner";
-                                break; 
-                            case 2:
-                                skills[i] = "Gatherer";
+                            case "1":
+                                skills.Add("Miner");
                                 break;
-                            case 3:
-                                skills[i] = "Fisher";
+                            case "2":
+                                skills.Add("Gatherer");
                                 break;
-                            case 4:
-                                skills[i] = "Woodcutter";
+                            case "3":
+                                skills.Add("Fisher");
                                 break;
-                            case 5:
-                                skills[i] = "Archer";
+                            case "4":
+                                skills.Add("Woodcutter");
                                 break;
-                            case 6:
-                                skills[i] = "Smith";
+                            case "5":
+                                skills.Add("Archer");
+                                break;
+                            case "6":
+                                skills.Add("Smith");
                                 break;
                             default:
                                 i--;
                                 break;
                         }
-                    } 
-                    DataSet createCharacter = ClsTest.createCharacter(characterName, skills[0], skills[1], skills[3], skills[4]);  //ystem.Console.WriteLine("Element({0},{1})={2}", i, j, arr[i, j]);
+                    }
+                    string skill1 = skills.ElementAt(0);
+                    string skill2 = skills.ElementAt(1);
+                    string skill3 = skills.ElementAt(2);
+                    string skill4 = skills.ElementAt(3);
+                    DataSet createCharacter = ClsTest.createCharacter(characterName, skill1, skill2, skill3, skill4);  //System.Console.WriteLine("Element({0},{1})={2}", i, j, arr[i, j]);
                     foreach (DataRow aRow in createCharacter.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
@@ -211,16 +220,22 @@ namespace miningTileGame
                     foreach (DataRow aRow in adminCheck.Tables[0].Rows)
                         if (aRow["Message"].ToString() == ClsTest.UserName.ToString() + " is an Admin")
                         {
+                            Console.WriteLine(aRow["Message"]);
                             adminMenu();
                         }
                         else
                         {
+                            Console.WriteLine(aRow["Message"]);
                             userMenu();
                         }
                         break;
 
                 case "7": //Log off
-                    ClsTest.userLogoff();
+                    DataSet userLogoff = ClsTest.userLogoff();
+                    foreach (DataRow aRow in userLogoff.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["Message"]);
+                    }
                     ClsTest.UserName = "";
                     menu();
                     break;
@@ -238,7 +253,7 @@ namespace miningTileGame
         {
             Console.WriteLine("The current Character is" + ClsTest.CharacterName.ToString());
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Character Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-            "1) Create Game\n2) Character Chats\n3) Return to Game in Progress\n4)  User Menu\n5) Main Menu\n6) Exit Program");
+            "\n1) Create Game\n2) Character Chats\n3) Return to Game in Progress\n4) User Menu\n5) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
@@ -282,6 +297,7 @@ namespace miningTileGame
                     {
                         Console.WriteLine(aRow["Message"]);
                     }
+                    characterMenu();
                     break;
 
                 case "3": //Return to Game
@@ -320,11 +336,7 @@ namespace miningTileGame
                     userMenu();
                     break;
 
-                case "5": // Main Menu
-                    menu();
-                    break;
-
-                case "6": // Exit Program
+                case "5": // Exit Program
                     Environment.Exit(0);
                     break;
             }
@@ -381,7 +393,7 @@ namespace miningTileGame
         private static void adminMenu()
         {
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Admin Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
-                        "\n1) Admin Kills Running Game\n2) Admin adds a user\n3) Admin edits user\n4) Admin deletes user\n5) Admin unlocks locked user\n6) Return to main menu\n7) Exit Program");
+                        "\n1) Admin Kills Running Game\n2) Admin adds a user\n3) Admin edits user\n4) Admin deletes user\n5) Admin unlocks locked user\n6) Return to User Menu\n7) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
@@ -446,18 +458,27 @@ namespace miningTileGame
                     int newLoginAttempts = Convert.ToInt16(Console.ReadLine());
                     Console.WriteLine("Please enter the new user score");
                     int newUserScore = Convert.ToInt16(Console.ReadLine());
-                    Console.WriteLine("Please enter the new locked status");
-                    int newIsLocked = Convert.ToInt16(Console.ReadLine());
-                    Console.WriteLine("Is this user an admin?\n 1) Yes\n2) No");
-                   string responseIsAdmin = Console.ReadLine();
-                    bool newIsAdmin
-                    if (responseIsAdmin == "1")
+                    Console.WriteLine("Is the user locked?\n1) Yes\n2) No");
+                    string responseIsLocked = Console.ReadLine();
+                    int newIsLocked;
+                    if (responseIsLocked == "1")
                     {
-                        newIsAdmin = true;
+                        newIsLocked = 1;
                     }
                     else
                     {
-                        newIsAdmin = false;
+                        newIsLocked = 0;
+                    }
+                    Console.WriteLine("Is this user an admin?\n 1) Yes\n2) No");
+                    string responseIsAdmin = Console.ReadLine();
+                    int newIsAdmin;
+                    if (responseIsAdmin == "1")
+                    {
+                        newIsAdmin = 1;
+                    }
+                    else
+                    {
+                        newIsAdmin = 0;
                     }
                     DataSet adminEditUser = ClsTest.adminEditUser(userToEdit, newUserName, newUserEmail, newUserPassword, newLoginAttempts, newUserScore, newIsLocked, newIsAdmin);
                     foreach (DataRow aRow in adminEditUser.Tables[0].Rows)
@@ -501,7 +522,7 @@ namespace miningTileGame
                     adminMenu();
                     break;
                 case "6":
-                    menu();
+                    userMenu();
                     break;
                 case "7":
                     Environment.Exit(0);
