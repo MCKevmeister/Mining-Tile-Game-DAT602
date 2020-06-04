@@ -614,7 +614,7 @@ BEGIN
             ROLLBACK;
         END;
     START TRANSACTION;
-        SELECT `characterName`
+        SELECT `characterName` FOR UPDATE - 
         FROM tblCharacter
         WHERE `username` = pUserName;
     COMMIT;
@@ -677,7 +677,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Change Character to play game with
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
