@@ -11,7 +11,7 @@ CREATE PROCEDURE makeTileGameDB()
 		CREATE TABLE tblUser(
 			`username` VARCHAR(32) PRIMARY KEY,
             -- `userID` INTEGER AUTO_INCREMENT PRIMARY KEY, 
-			`email` VARCHAR(64) NOT NULL,
+			`email` VARCHAR(64) UNIQUE NOT NULL,
             `userPassword` VARCHAR(64) NOT NULL,
             `loginAttempts` INTEGER NOT NULL DEFAULT 0,
             `userScore` INTEGER NOT NULL DEFAULT 0,
@@ -65,7 +65,7 @@ CREATE PROCEDURE makeTileGameDB()
             `xLocation` INTEGER NOT NULL,
             `yLocation` INTEGER NOT NULL,
             `itemName` VARCHAR(32) NOT NULL,
-            FOREIGN KEY (`mapName`, `xLocation`, `yLocation`) REFERENCES tblTile (`mapName`, `xLocation`, `yLocation`), -- figure out if i  need an on update bs TODO
+            FOREIGN KEY (`mapName`, `xLocation`, `yLocation`) REFERENCES tblTile (`mapName`, `xLocation`, `yLocation`),
             FOREIGN KEY (`itemName`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE ON DELETE CASCADE,
             PRIMARY KEY (`mapName`, `xLocation`, `yLocation`, `itemName`)
             );
@@ -478,7 +478,6 @@ BEGIN
 	COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Log off 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -502,7 +501,6 @@ BEGIN
 	COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Edit User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -517,7 +515,6 @@ BEGIN
         SELECT "editUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
 		IF NOT EXISTS (SELECT * FROM tblUser WHERE `username` = pUserName) THEN
 			BEGIN
@@ -557,7 +554,6 @@ BEGIN
         SELECT "deleteUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
-    -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
     START TRANSACTION;
         IF EXISTS (SELECT * FROM tblUser WHERE `username` = pUserName) THEN
             DELETE FROM tblUser
