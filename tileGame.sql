@@ -450,15 +450,7 @@ BEGIN
             BEGIN
                 SELECT "Username doesn't exist" AS MESSAGE;
             END;
-        ELSEIF ((lcUserName = pUserName) AND (lcUserPassword <> pUserPassword)) THEN
-            BEGIN
-                UPDATE tbluser
-                SET `loginAttempts` = lcUserLoginAttempts + 1
-                WHERE `username` = pUserName;
-                SET lcUserLoginAttempts = lcUserLoginAttempts + 1;
-                SELECT "Incorrect Password" AS MESSAGE;
-            END;
-        ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND ((lcUserLoginAttempts >= 5) OR (lcUserIsLocked)))
+		ELSEIF (lcUserLoginAttempts > 4) OR (lcUserIsLocked = 1)
         THEN
             BEGIN
                 UPDATE tblUser
@@ -466,6 +458,14 @@ BEGIN
                 WHERE `username` = pUserName;
                 SELECT "User has been is locked out. Please contact an administrator to get this user unlocked" AS MESSAGE;
             END; 
+        ELSEIF ((lcUserName = pUserName) AND (lcUserPassword <> pUserPassword)) 
+        THEN
+            BEGIN
+                UPDATE tbluser
+                SET `loginAttempts` = `loginAttempts` + 1
+                WHERE `username` = pUserName;
+                SET lcUserLoginAttempts = lcUserLoginAttempts + 1;
+            END;
         ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND (lcUserIsLocked = 0) AND (lcUserLoginAttempts < 5))
         THEN
             BEGIN
@@ -478,6 +478,8 @@ BEGIN
 	COMMIT;
 END//
 DELIMITER ;
+
+select * from tblUser;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Log off 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -614,7 +616,7 @@ BEGIN
             ROLLBACK;
         END;
     START TRANSACTION;
-        SELECT `characterName` FOR UPDATE - 
+        SELECT `characterName`
         FROM tblCharacter
         WHERE `username` = pUserName;
     COMMIT;
@@ -743,7 +745,7 @@ BEGIN
         ROLLBACK;
     END;
     START TRANSACTION;
-        SELECT `mapName`
+        SELECT *
         FROM tblmap;
     COMMIT;
 END//
@@ -1425,7 +1427,7 @@ BEGIN
                 WHERE `mapName` = pMapName;
                 DELETE FROM tblTileItem
                 WHERE `mapName` = pMapName;
-                SELECT CONCAT(pMapName, " has been killed")
+                SELECT CONCAT(pMapName, " has been killed") AS MESSAGE;
             End;
         ELSE
             BEGIN
@@ -1441,7 +1443,7 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminAddUser//
-CREATE PROCEDURE adminAddUser(pAdminUserName VARCHAR(32), pCurrentUserName VARCHAR(32), pNewUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BIT)
+CREATE PROCEDURE adminAddUser(pAdminUserName VARCHAR(32), pNewUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BIT)
 BEGIN
     DECLARE exit handler for sqlexception
     BEGIN        
@@ -1496,19 +1498,20 @@ BEGIN
                 IF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName)
                 THEN
                     BEGIN
-                        SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS `Message`;
+                        SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS MESSAGE;
                     END;
                 ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
                 THEN
                     BEGIN
-                        SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS `Message`;
+                        SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS MESSAGE;
                     END;
                 ELSE
                     BEGIN
                         UPDATE tblUser
-                        SET `email` = username, pNewUserName = pNewUserEmail, `userPassword` = pNewUserPassword, `loginAttempts` = pLoginAttempts, `userScore` = pUserScore
+                        SET `email` = pNewUserEmail, `username` = pNewUserEmail, `userPassword` = pNewUserPassword, `loginAttempts` = pLoginAttempts, `userScore` = pUserScore
                         WHERE pUserName = `username`;
                         SELECT "The user has been updated" AS MESSAGE;
+					END;
                 END IF;
             END;
         ELSE

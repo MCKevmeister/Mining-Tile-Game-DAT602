@@ -49,7 +49,6 @@ namespace miningTileGame
                     DataSet UserLogin = ClsTest.userLogin(loginUsername, loginPassword);
                     foreach (DataRow aRow in UserLogin.Tables[0].Rows)
                     {
-                        // Console.WriteLine(aRow["Message"]);
                         if (aRow["Message"].ToString() ==  loginUsername +" is now Online") // sucess message
                         {
                             ClsTest.UserName = loginUsername; // set username inside cls test
@@ -75,8 +74,7 @@ namespace miningTileGame
         }
         private static void userMenu()
         {
-            //string currentUser = ClsTest.getUserName().ToString();
-            Console.WriteLine("The current User is " + ClsTest.UserName.ToString());
+            Console.WriteLine("The current User is " + ClsTest.UserName);
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~User Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
                 "\n1) Edit User\n2) Delete User\n3) User Creates Character\n4) User Deletes Character\n5) Select Character to play game\n6) Admin Menu\n7) Log off\n8) Exit Program");
             var response = Console.ReadLine();
@@ -169,7 +167,7 @@ namespace miningTileGame
                     string skill2 = skills.ElementAt(1);
                     string skill3 = skills.ElementAt(2);
                     string skill4 = skills.ElementAt(3);
-                    DataSet createCharacter = ClsTest.createCharacter(characterName, skill1, skill2, skill3, skill4);  //System.Console.WriteLine("Element({0},{1})={2}", i, j, arr[i, j]);
+                    DataSet createCharacter = ClsTest.createCharacter(characterName, skill1, skill2, skill3, skill4);
                     foreach (DataRow aRow in createCharacter.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
@@ -179,10 +177,14 @@ namespace miningTileGame
 
                 case "4": //User Deletes Character
                     Console.WriteLine("These are you current Characters");
-                    ClsTest.getAllUserCharacters();
+                    DataSet currentCharaters = ClsTest.getAllUserCharacters();
+                    foreach (DataRow aRow in currentCharaters.Tables[0].Rows)
+                    {
+                        Console.WriteLine(aRow["characterName"]);
+                    }
                     Console.WriteLine("What is the name of the Character you want to delete?");
                     string characterToDelete = Console.ReadLine();
-                    DataSet deleteCharacter = ClsTest.deleteCharacter();
+                    DataSet deleteCharacter = ClsTest.deleteCharacter(characterToDelete);
                     foreach (DataRow aRow in deleteCharacter.Tables[0].Rows)
                     {
                         Console.WriteLine(aRow["Message"]);
@@ -203,7 +205,7 @@ namespace miningTileGame
                     {
                         if (aRow["Message"].ToString() == chosenCharacter + " is now active") // sucess message
                             {
-                            ClsTest.CharacterName = characterChoice; // set character inside cls test
+                            ClsTest.CharacterName = chosenCharacter; // set character inside cls test
                             Console.WriteLine(aRow["Message"]);
                             characterMenu();
                         }
@@ -251,7 +253,7 @@ namespace miningTileGame
         }
         private static void characterMenu()
         {
-            Console.WriteLine("The current Character is" + ClsTest.CharacterName.ToString());
+            Console.WriteLine("The current Character is " + ClsTest.CharacterName);
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Character Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" +
             "\n1) Create Game\n2) Character Chats\n3) Return to Game in Progress\n4) User Menu\n5) Exit Program");
             var response = Console.ReadLine();
@@ -262,14 +264,14 @@ namespace miningTileGame
                     DataSet onlineCharacter = ClsTest.onlineCharacters();
                     foreach (DataRow aRow in onlineCharacter.Tables[0].Rows)
                     {
-                        Console.WriteLine(aRow["Message"]);
+                        Console.WriteLine(aRow["characterName"]);
                     }
                     string opponent = Console.ReadLine();
                     Console.WriteLine("What map do you want to play on?");
                     DataSet allMaps = ClsTest.getMaps();
-                    foreach(DataRow aRow in onlineCharacter.Tables[0].Rows)
+                    foreach(DataRow aRow in allMaps.Tables[0].Rows)
                     {
-                        Console.WriteLine(aRow["Message"]);
+                        Console.WriteLine(aRow["mapName"]);
                     }
                     string map = Console.ReadLine();
                     DataSet createGame = ClsTest.createGame(opponent, map);
@@ -293,10 +295,6 @@ namespace miningTileGame
                     Console.WriteLine("What do you want to say?");
                     string message = Console.ReadLine();
                     DataSet characterChats = ClsTest.characterChats(message);
-                    foreach (DataRow aRow in characterChats.Tables[0].Rows)
-                    {
-                        Console.WriteLine(aRow["Message"]);
-                    }
                     characterMenu();
                     break;
 
@@ -343,7 +341,8 @@ namespace miningTileGame
         }
         private static void gameMenu()
         {
-            Console.Write("1) Leave Game\n2) Character makes Move\n3) Character picks up item\n4) Player Uses Item on Mine\n7) Exit Program");
+            Console.Write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~Character Menu~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPlease Choose from the below list" + 
+                "1) Leave Game\n2) Character makes Move\n3) Character picks up item\n4) Player Uses Item on Mine\n7) Exit Program");
             var response = Console.ReadLine();
             switch (response)
             {
