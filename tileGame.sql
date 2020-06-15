@@ -465,6 +465,7 @@ BEGIN
                 SET `loginAttempts` = `loginAttempts` + 1
                 WHERE `username` = pUserName;
                 SET lcUserLoginAttempts = lcUserLoginAttempts + 1;
+                SELECT "Incorrect Password" AS MESSAGE;
             END;
         ELSEIF ((lcUserName = pUserName) AND (lcUserPassword = pUserPassword) AND (lcUserIsLocked = 0) AND (lcUserLoginAttempts < 5))
         THEN
@@ -479,7 +480,9 @@ BEGIN
 END//
 DELIMITER ;
 
-select * from tblUser;
+Select * from tblUser;
+Update tblUser
+SET `isLocked` = 0 and `loginAttempts` = 0 WHERE `username` = "Mark";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Log off 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -567,6 +570,7 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Creates Character (inlcuding character skills created)
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1646,5 +1650,36 @@ BEGIN
 		END;
 	END IF;
 COMMIT;
+END//
+DELIMITER ;
+
+
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Get Character Skills
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DELIMITER //
+DROP PROCEDURE IF EXISTS getCharacterSkills//
+CREATE PROCEDURE getCharacterSkills(pCharacterName VARCHAR(32)) 
+BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN        
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getCharacterSkills", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        ROLLBACK;
+    END;
+    START TRANSACTION;
+        IF EXISTS(SELECT `characterName` FROM tblCharacter WHERE `characterName` = pCharacterName) THEN
+            BEGIN
+                SELECT `skillName` 
+                FROM tblCharacterSkill 
+                WHERE `characterName` = pCharacterName;
+            END;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pCharacterName, " doesn't exist") AS MESSAGE;
+            END;
+        END IF;
+    COMMIT;
 END//
 DELIMITER ;
