@@ -1653,7 +1653,6 @@ COMMIT;
 END//
 DELIMITER ;
 
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Character Skills
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1683,3 +1682,35 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Get User Detials
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DELIMITER //
+DROP PROCEDURE IF EXISTS getUserDetials//
+CREATE PROCEDURE getUserDetials(pUsername VARCHAR(32)) 
+BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN        
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getCharacterSkills", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        ROLLBACK;
+    END;
+    START TRANSACTION;
+        IF EXISTS(SELECT * FROM tblUser WHERE `username` = pUsername) THEN
+            BEGIN
+                SELECT * 
+                FROM tblUser 
+                WHERE `username` = pUsername;
+            END;
+        ELSE
+            BEGIN
+                SELECT CONCAT(pUsername, " doesn't exist") AS MESSAGE;
+            END;
+        END IF;
+    COMMIT;
+END//
+DELIMITER ;
+
+Call getUserDetials("Mark");
