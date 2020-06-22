@@ -10,7 +10,6 @@ CREATE PROCEDURE makeTileGameDB()
 	BEGIN 
 		CREATE TABLE tblUser(
 			`username` VARCHAR(32) PRIMARY KEY,
-            -- `userID` INTEGER AUTO_INCREMENT PRIMARY KEY, 
 			`email` VARCHAR(64) UNIQUE NOT NULL,
             `userPassword` VARCHAR(64) NOT NULL,
             `loginAttempts` INTEGER NOT NULL DEFAULT 0,
@@ -22,28 +21,23 @@ CREATE PROCEDURE makeTileGameDB()
             
 		CREATE TABLE tblSkill (
 			`skillName` VARCHAR(20) PRIMARY KEY,
-            -- `skillID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `skilldescription` VARCHAR(255) NOT NULL
 			);
 
 		CREATE TABLE tblItem(
             `itemName` VARCHAR(32) PRIMARY KEY,
-            -- `itemID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `matchingSkill` VARCHAR(20) NOT NULL,
-			-- `itemDurability` INTEGER NOT NULL, -- not necssary here
             `maxDurability` INTEGER NOT NULL,
 			FOREIGN KEY (`matchingSkill`) REFERENCES tblSkill (`skillName`) ON UPDATE CASCADE
 			);
             
 		CREATE TABLE tblMine(
             `mineName` VARCHAR(20) PRIMARY KEY,
-            -- `mineID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `minedBy` VARCHAR(32) NOT NULL,
             FOREIGN KEY (`minedBy`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE
 			);
             
         CREATE TABLE tblMap(
-			-- `mapID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `mapName` VARCHAR(16) PRIMARY KEY,
             `homeTileXLocation` INTEGER NOT NULL,
             `homeTileYLocation` INTEGER NOT NULL,
@@ -52,7 +46,6 @@ CREATE PROCEDURE makeTileGameDB()
 			);
 
         CREATE TABLE tblTile(
-			-- `tileID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `mapName` VARCHAR(16) NOT NULL,
             `xLocation` INTEGER NOT NULL,
             `yLocation` INTEGER NOT NULL,
@@ -72,7 +65,6 @@ CREATE PROCEDURE makeTileGameDB()
 
         CREATE TABLE tblCharacter(
             `characterName` VARCHAR(32) PRIMARY KEY,
-            -- `characterID` INTEGER AUTO_INCREMENT ,
             `username` VARCHAR(32) NOT NULL,
             `xPosition` INTEGER,
             `yPosition` INTEGER,
@@ -98,12 +90,10 @@ CREATE PROCEDURE makeTileGameDB()
             );
 
         CREATE TABLE tblCharacterItem(
-            -- `characterItemID` AUTO_INCREMENT PRIMARY KEY,
 			`characterName` VARCHAR(32) NOT NULL,
             `itemName` VARCHAR(32) NOT NULL,
             `quantity` INTEGER,
             `itemDurability` INTEGER NOT NULL,
-            -- PRIMARY KEY (`characterName`, `itemName`),
             FOREIGN KEY (`characterName`) REFERENCES tblCharacter (`characterName`) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY (`itemName`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE
 			);
@@ -525,12 +515,12 @@ BEGIN
 			BEGIN
 				SELECT CONCAT("Sorry, the user ", pUserName, " doesn't exist") AS MESSAGE;
 			END;
-		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName) THEN
+		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName AND `username` <> pUserName) THEN
 			BEGIN
 				SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS Message;
 			END;
-		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
-		THEN
+		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail AND `email`) -- need to allow for old password to remain TODO
+        THEN
 			BEGIN
 				SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS Message;
 			END;
@@ -545,6 +535,9 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
+Select * from tblUser;
+Call editUser("simple", "Mark", "MarksPassword", "newagain");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Delete User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -598,7 +591,7 @@ BEGIN
                 
                 INSERT INTO tblCharacterSkill(`characterName`, `skillName`)
                 VALUES(pCharacterName, pSkill1),(pCharacterName, pSkill2),(pCharacterName,pSkill3),(pCharacterName,pSkill4);
-                SELECT CONCAT(pCharacterName, " has been created with ", pSkill1, ", ", pSkill2, ", ", pSkill3, " and ", pSkill4, " as skills") AS MESSAGE;
+                SELECT CONCAT(pCharacterName, " has been created") AS MESSAGE;
             END;
 		END IF;
 	COMMIT;
@@ -1487,7 +1480,7 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
 DROP PROCEDURE IF EXISTS adminEditUser//
-CREATE PROCEDURE adminEditUser(pAdminUserName VARCHAR(32), pUserName VARCHAR(32) , pNewUserName VARCHAR(64), pNewUserEmail VARCHAR(64), pUserPassword VARCHAR(64), pLoginAttempts INTEGER, pUserScore INTEGER, pIsLocked BIT, pIsAdmin BIT)
+CREATE PROCEDURE adminEditUser(pAdminUserName VARCHAR(32), pUserName VARCHAR(32) , pNewUserName VARCHAR(64), pNewUserEmail VARCHAR(64), pNewUserPassword VARCHAR(64), pLoginAttempts INTEGER, pUserScore INTEGER, pIsLocked BIT, pIsAdmin BIT)
 BEGIN  
     DECLARE exit handler for sqlexception
     BEGIN        
@@ -1499,12 +1492,12 @@ BEGIN
     START TRANSACTION;
         IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
             BEGIN
-                IF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName)
+                IF EXISTS (SELECT * FROM tblUser WHERE `username` = pNewUserName AND `username` <> pUserName)
                 THEN
                     BEGIN
                         SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS MESSAGE;
                     END;
-                ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail)
+                ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail AND `email` <> pNewUserEmail)
                 THEN
                     BEGIN
                         SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS MESSAGE;
@@ -1653,6 +1646,8 @@ COMMIT;
 END//
 DELIMITER ;
 
+-- Added procedures for milestone 3
+
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Character Skills
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1682,13 +1677,14 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
+SELECT * FROM tblCharacter;
+Call getCharacterSkills("asdfsadasdfsadfasdfadsfasdfasdf");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get User Detials
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DELIMITER //
-DROP PROCEDURE IF EXISTS getUserDetials//
-CREATE PROCEDURE getUserDetials(pUsername VARCHAR(32)) 
+DROP PROCEDURE IF EXISTS getUserDetails//
+CREATE PROCEDURE getUserDetails(pUsername VARCHAR(32)) 
 BEGIN
     DECLARE exit handler for sqlexception
     BEGIN        
@@ -1713,4 +1709,4 @@ BEGIN
 END//
 DELIMITER ;
 
-Call getUserDetials("Mark");
+Call getUserDetails("Mark");
