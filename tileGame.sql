@@ -721,12 +721,14 @@ BEGIN
         ROLLBACK;
     END;
     START TRANSACTION;
-        SELECT `characterName`
+        SELECT `characterName`, `characterScoreTotal`
         FROM tblcharacter
         WHERE `isActive` = true;
     COMMIT;
 END//
 DELIMITER ;
+
+call onlineCharacters();
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Create Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
