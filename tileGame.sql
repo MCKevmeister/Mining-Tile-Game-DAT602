@@ -231,6 +231,7 @@ Values
 ('StepehnCharacter', 'Stephen', 3, 3, 0, false),
 ('MichaelCharacter', 'Michael', 3, 3, 0, false);
 
+
 INSERT INTO tblCharacterSkill(`characterName`, `skillName`)
 Values 
 ('MarkCharacter', 'Miner'), ('MarkCharacter','Gatherer'), ('MarkCharacter', 'Fisher'), ('MarkCharacter', 'Woodcutter'),
@@ -469,10 +470,6 @@ BEGIN
 	COMMIT;
 END//
 DELIMITER ;
-
-Select * from tblUser;
-Update tblUser
-SET `isLocked` = 0 and `loginAttempts` = 0 WHERE `username` = "Mark";
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Log off 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1679,8 +1676,7 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-SELECT * FROM tblCharacter;
-Call getCharacterSkills("asdfsadasdfsadfasdfadsfasdfasdf");
+
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get User Detials
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1692,7 +1688,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getCharacterSkills", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getUserDetails", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1710,5 +1706,29 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Get Character Tile
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DELIMITER //
+DROP PROCEDURE IF EXISTS getCharacterTile//
+CREATE PROCEDURE getCharacterTile(pCharactername VARCHAR(32), pMap VARCHAR(16)) 
+BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN        
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getCharacterTile", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        ROLLBACK;
+    END;
+    START TRANSACTION;
+        SELECT `xLocation`, `yLocation`
+        FROM tblCharacterTile
+        WHERE `mapName` = pMap;
+    COMMIT;
+END//
+DELIMITER ;
 
-Call getUserDetails("Mark");
+INSERT INTO tblCharacter(`characterName`, `username`, `xPosition`, `yPosition`,`characterScoreTotal`, `isActive`)
+Values 
+('Worun', 'Stephen', null, null, 0, false),
+('Derer', 'Michael', null, null, 0, false);
