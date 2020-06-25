@@ -1728,6 +1728,9 @@ BEGIN
 END//
 DELIMITER ;
 
+SELECT * FROM tblUser;
+SELECT * FROM tblCharacterTile;
+DELETE FROM tblCharacterTile WHERE `characterName` = 'MichaelCharacter';
 INSERT INTO tblCharacter(`characterName`, `username`, `xPosition`, `yPosition`,`characterScoreTotal`, `isActive`)
 Values 
 ('Worun', 'Stephen', null, null, 0, false),
