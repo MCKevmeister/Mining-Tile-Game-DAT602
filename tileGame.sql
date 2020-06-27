@@ -672,6 +672,8 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
+SELECT * from tblCharacter;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Change Character to play game with
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -760,12 +762,14 @@ BEGIN
         ROLLBACK;
     END;
     START TRANSACTION;
-        SELECT `characterName`
+        SELECT `characterName`, `characterScoreTotal `
         FROM tblCharacter
         WHERE (`isActive` = 1 AND `characterName` <> pCharacterName);
     COMMIT;
 END//
 DELIMITER ;
+
+call chooseOpponent('bob');
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS createGame//
