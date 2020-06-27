@@ -248,51 +248,51 @@ Values
 ('StepehnCharacter', 'I mean we could'), ('StepehnCharacter', 'That sounds great'),
 ('MichaelCharacter', 'Chocolate rain'), ('MichaelCharacter', 'we woo');
 
-INSERT INTO tblCharacterItem(`characterName`, `itemName`, `quantity`, `itemDurability`)
-Values ('MarkCharacter','Pickaxe',1,3),
-('MarkCharacter','Basket',1,3),
-('MarkCharacter','Rod',1,3),
-('MaryCharacter','Bow',1,3),
-('MaryCharacter','Rod',1,3),
-('MaryCharacter','Axe',1,3),
-('JohnCharacter','Bow',1,3),
-('JohnCharacter','Basket',1,3),
-('JohnCharacter','Hammer',1,3),
-('JohnCharacter','Pickaxe',1,3),
-('StepehnCharacter','Hammer',1,3),
-('StepehnCharacter','Bow',1,3),
-('StepehnCharacter','Rod',1,3),
-('StepehnCharacter','Axe',1,3),
-('MichaelCharacter','Bow',1,3),
-('MichaelCharacter','Basket',1,3),
-('MichaelCharacter','Hammer',1,3),
-('MichaelCharacter','Pickaxe',1,3);
+-- INSERT INTO tblCharacterItem(`characterName`, `itemName`, `quantity`, `itemDurability`)
+-- Values ('MarkCharacter','Pickaxe',1,3),
+-- ('MarkCharacter','Basket',1,3),
+-- ('MarkCharacter','Rod',1,3),
+-- ('MaryCharacter','Bow',1,3),
+-- ('MaryCharacter','Rod',1,3),
+-- ('MaryCharacter','Axe',1,3),
+-- ('JohnCharacter','Bow',1,3),
+-- ('JohnCharacter','Basket',1,3),
+-- ('JohnCharacter','Hammer',1,3),
+-- ('JohnCharacter','Pickaxe',1,3),
+-- ('StepehnCharacter','Hammer',1,3),
+-- ('StepehnCharacter','Bow',1,3),
+-- ('StepehnCharacter','Rod',1,3),
+-- ('StepehnCharacter','Axe',1,3),
+-- ('MichaelCharacter','Bow',1,3),
+-- ('MichaelCharacter','Basket',1,3),
+-- ('MichaelCharacter','Hammer',1,3),
+-- ('MichaelCharacter','Pickaxe',1,3);
 
-INSERT INTO tblCharacterMap(`characterName`, `mapName`, `score`)
-Values
-('MarkCharacter',"3 by 3",0),
-('MaryCharacter',"3 by 3",0),
-('JohnCharacter',"5 by 5",0),
-('StepehnCharacter',"5 by 5",0),
-('MichaelCharacter',"5 by 5",0);
+-- INSERT INTO tblCharacterMap(`characterName`, `mapName`, `score`)
+-- Values
+-- ('MarkCharacter',"3 by 3",0),
+-- ('MaryCharacter',"3 by 3",0),
+-- ('JohnCharacter',"5 by 5",0),
+-- ('StepehnCharacter',"5 by 5",0),
+-- ('MichaelCharacter',"5 by 5",0);
 
-INSERT INTO tblMineTile(`mineName`, `mapName`, `xLocation`, `yLocation`)
-Values
-('Gem', "3 by 3", 1, 3),
-('Berry',"3 by 3", 3, 1),
-('Fish', "5 by 5", 1, 2),
-('Tree', "5 by 5", 2, 3),
-('Target', "5 by 5", 4, 4),
-('Anvil', "5 by 5", 4, 1),
-('Gem',	 "5 by 5", 2, 5);
+-- INSERT INTO tblMineTile(`mineName`, `mapName`, `xLocation`, `yLocation`)
+-- Values
+-- ('Gem', "3 by 3", 1, 3),
+-- ('Berry',"3 by 3", 3, 1),
+-- ('Fish', "5 by 5", 1, 2),
+-- ('Tree', "5 by 5", 2, 3),
+-- ('Target', "5 by 5", 4, 4),
+-- ('Anvil', "5 by 5", 4, 1),
+-- ('Gem',	 "5 by 5", 2, 5);
 
-INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`, `isPlaying`)
-Values
-('MarkCharacter', "3 by 3", 2, 2, 1),
-('MaryCharacter', "3 by 3", 2, 2, 1),
-('JohnCharacter', "5 by 5", 3, 3, 0),
-('StepehnCharacter', "5 by 5", 3, 3, 1),
-('MichaelCharacter', "5 by 5", 3, 3, 0);
+-- INSERT INTO tblCharacterTile(`characterName`, `mapName`, `xLocation`, `yLocation`, `isPlaying`)
+-- Values
+-- ('MarkCharacter', "3 by 3", 2, 2, 1),
+-- ('MaryCharacter', "3 by 3", 2, 2, 1),
+-- ('JohnCharacter', "5 by 5", 3, 3, 0),
+-- ('StepehnCharacter', "5 by 5", 3, 3, 1),
+-- ('MichaelCharacter', "5 by 5", 3, 3, 0);
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- UPDATE Statements
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -994,10 +994,11 @@ BEGIN
                         ELSE
                             BEGIN
                                 CASE pDirection
-                                    WHEN "up" THEN SET lcCharacterY = lcCharacterY - 1;
-                                    WHEN "right" THEN SET lcCharacterX = lcCharacterX + 1;
-                                    WHEN "down" THEN SET lcCharacterY = lcCharacterY + 1; 
-                                    WHEN "left" THEN SET lcCharacterX = lcCharacterX - 1; 
+                                    WHEN "Up" THEN SET lcCharacterY = lcCharacterY - 1;
+                                    WHEN "Right" THEN SET lcCharacterX = lcCharacterX + 1;
+                                    WHEN "Down" THEN SET lcCharacterY = lcCharacterY + 1; 
+                                    WHEN "Left" THEN SET lcCharacterX = lcCharacterX - 1; 
+                                    WHEN "";
                                 END CASE;
                                 IF((EXISTS(SELECT *
                                     FROM tblMap
@@ -1735,3 +1736,47 @@ INSERT INTO tblCharacter(`characterName`, `username`, `xPosition`, `yPosition`,`
 Values 
 ('Worun', 'Stephen', null, null, 0, false),
 ('Derer', 'Michael', null, null, 0, false);
+
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Get Position of all game Characters
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DELIMITER //
+DROP PROCEDURE IF EXISTS getAllCharactersInMap//
+CREATE PROCEDURE getAllCharactersInMap(pMap VARCHAR(16))
+BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN        
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getAllCharactersInMap", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        ROLLBACK;
+    END;
+    START TRANSACTION;
+        SELECT `characterName`, `xLocation`, `yLocation`
+        FROM tblCharacterTile
+        Where `mapName` = pMap AND isPlaying = 1;
+    COMMIT;
+END//
+DELIMITER ;
+
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Get Position of all game Items
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DELIMITER //
+DROP PROCEDURE IF EXISTS getAllItemsInMap//
+CREATE PROCEDURE getAllItemsInMap(pMap VARCHAR(16))
+BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN        
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getAllItemsInMap", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        ROLLBACK;
+    END;
+    START TRANSACTION;
+        SELECT `itemName`, `xLocation`, `yLocation`
+        FROM tblCharacterTile
+        Where `mapName` = pMap;
+    COMMIT;
+END//
+DELIMITER ;
