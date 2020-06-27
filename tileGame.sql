@@ -4,8 +4,8 @@ USE dbTileGame;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Procdure to create the all of the tables in the database
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DROP PROCEDURE IF EXISTS makeTileGameDB;
 DELIMITER //
-DROP PROCEDURE IF EXISTS makeTileGameDB//
 CREATE PROCEDURE makeTileGameDB()
 	BEGIN 
 		CREATE TABLE tblUser(
@@ -85,7 +85,6 @@ CREATE PROCEDURE makeTileGameDB()
 			`chatID` INTEGER AUTO_INCREMENT PRIMARY KEY,
             `sender` VARCHAR(32) NOT NULL,
             `message` VARCHAR(255) NOT NULL,
-            `timesent` DATETIME,
             FOREIGN KEY (`sender`) REFERENCES tblCharacter (`characterName`) ON DELETE CASCADE ON UPDATE CASCADE
             );
 
@@ -213,15 +212,15 @@ Values
 ("13 by 13", 12, 1), ("13 by 13", 12, 2), ("13 by 13", 12, 3), ("13 by 13", 12, 4), ("13 by 13", 12, 5), ("13 by 13", 12, 6), ("13 by 13", 12, 7), ("13 by 13", 12, 8), ("13 by 13", 12, 9), ("13 by 13", 12, 10), ("13 by 13", 12, 11), ("13 by 13", 12, 12), ("13 by 13", 12, 13),
 ("13 by 13", 13, 1), ("13 by 13", 13, 2), ("13 by 13", 13, 3), ("13 by 13", 13, 4), ("13 by 13", 13, 5), ("13 by 13", 13, 6), ("13 by 13", 13, 7), ("13 by 13", 13, 8), ("13 by 13", 13, 9), ("13 by 13", 13, 10), ("13 by 13", 13, 11), ("13 by 13", 13, 12), ("13 by 13", 13, 13);
 
- INSERT INTO tblTileItem(`mapName`, `xLocation`, `yLocation`, `itemName`)
- VALUES
- ('3 by 3', 1, 1, 'Pickaxe'),
- ('3 by 3', 3, 3, 'Basket'),
- ('5 by 5', 2, 4, 'Pickaxe'),
- ('5 by 5', 3, 5, 'Rod'),
- ('5 by 5', 4, 3, 'Axe'),
- ('5 by 5', 5, 5, 'Bow'),
- ('5 by 5', 1, 3, 'Hammer');
+ -- INSERT INTO tblTileItem(`mapName`, `xLocation`, `yLocation`, `itemName`)
+ -- VALUES
+ -- ('3 by 3', 1, 1, 'Pickaxe'),
+ -- ('3 by 3', 3, 3, 'Basket'),
+ -- ('5 by 5', 2, 4, 'Pickaxe'),
+ -- ('5 by 5', 3, 5, 'Rod'),
+ -- ('5 by 5', 4, 3, 'Axe'),
+ -- ('5 by 5', 5, 5, 'Bow'),
+ -- ('5 by 5', 1, 3, 'Hammer');
 
 INSERT INTO tblCharacter(`characterName`, `username`, `xPosition`, `yPosition`,`characterScoreTotal`, `isActive`)
 Values 
@@ -396,7 +395,7 @@ BEGIN
         BEGIN     
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "registerUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "registerUser error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
     START TRANSACTION;
@@ -428,7 +427,7 @@ BEGIN
         BEGIN
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "userLogin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "userLogin error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
 	START TRANSACTION;
@@ -480,7 +479,7 @@ BEGIN
     BEGIN
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "userLogin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "userLogin error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
 	START TRANSACTION;
@@ -504,7 +503,7 @@ BEGIN
     BEGIN
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "editUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "editUser error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -546,7 +545,7 @@ BEGIN
     BEGIN       
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "deleteUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "deleteUser error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -572,7 +571,7 @@ BEGIN
         BEGIN       
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "createCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "createCharacter error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
     START TRANSACTION;
@@ -606,7 +605,7 @@ BEGIN
         BEGIN
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "getAllUserCharacters", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "getAllUserCharacters error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
     START TRANSACTION;
@@ -654,7 +653,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "selectCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "selectCharacter error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -684,7 +683,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "selectCharacter", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "selectCharacter error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -714,7 +713,7 @@ BEGIN
     BEGIN
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "onlineCharacters", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "onlineCharacters error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -757,7 +756,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "chooseOpponent", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "chooseOpponent error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -801,7 +800,7 @@ BEGIN
         FROM tblMap
         WHERE `mapName` = pMap
         INTO lcXMax, lcYMax;
-        IF (EXISTS(SELECT * FROM tblcharacterMap WHERE `characterName` = pCharacter1) OR (EXISTS(SELECT * FROM tblcharacterMap WHERE `characterName` = pCharacter2))) THEN
+        IF (EXISTS(SELECT * FROM tblCharacterTile WHERE `characterName` = pCharacter1) OR (EXISTS(SELECT * FROM tblCharacterTile WHERE `characterName` = pCharacter2))) THEN -- was tblCharacterMap where tblCharacterTile is now
 			BEGIN
 				SELECT "Cannot make game, characters are already playing" AS MESSAGE;
 			END;
@@ -882,7 +881,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "leaveCharacterMap", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "leaveCharacterMap error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -906,7 +905,7 @@ BEGIN
         ROLLBACK;
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "endCharacterGame", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "endCharacterGame error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
     END;
     DECLARE exit handler for sqlwarning
     BEGIN
@@ -933,15 +932,17 @@ BEGIN
     BEGIN
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getMapsCharacterCanRejoin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getMapsCharacterCanRejoin error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION; 
         SELECT `mapName` 
-        FROM tblCharacterTile 
+        FROM tblCharacterTile -- changed from tblCharacterTile
         WHERE ((`characterName` = pCharacterName) AND (`isPlaying` = 0));
     COMMIT;
 END//
+
+SELECT * FROM tblCharacterTile;
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS characterReturnToMap//
@@ -955,7 +956,7 @@ BEGIN
     BEGIN
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getMapsCharacterCanRejoin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getMapsCharacterCanRejoin error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1010,7 +1011,7 @@ BEGIN
                                     BEGIN
                                         INSERT INTO tblCharacterMap 
                                         VALUES (pCharacterName, pMap, 0);
-                                        SELECT CONCAT(pCharacterName, " has rejoined ", pMap, ". Score reset") AS MESSAGE;
+                                        SELECT CONCAT(pCharacterName, " has rejoined. Score reset") AS MESSAGE;
                                     END;
                                 ELSE
                                     BEGIN
@@ -1042,7 +1043,7 @@ BEGIN
         BEGIN            
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "characterMakesMove", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "characterMakesMove error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
     START TRANSACTION;
@@ -1190,7 +1191,7 @@ BEGIN
         BEGIN            
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "characterPicksUpItem", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "characterPicksUpItem error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
     -- DECLARE CONTINUE HANDLER FOR SQLWARNING BEGIN END;
@@ -1233,7 +1234,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getCharacterMaps", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getCharacterMaps error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1327,23 +1328,25 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Character chats
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DROP PROCEDURE IF EXISTS characterChats;
 DELIMITER //
-DROP PROCEDURE IF EXISTS characterChats//
 CREATE PROCEDURE characterChats(pCharacterName VARCHAR(32), pMessage VARCHAR(255)) 
 BEGIN
     DECLARE exit handler for sqlexception
         BEGIN            
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "characterChats", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "characterChats error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
     START TRANSACTION;
-        INSERT INTO tblChat
-        VALUES (pCharacterName, pMessage, NOW());
+        INSERT INTO tblChat (sender, message)
+        VALUES (pCharacterName, pMessage);
     COMMIT;
 END//
 DELIMITER ;
+
+call characterChats('MarkCharacter', 'one');
 -- ~~~~~~~~~~~~~~~Admin~~~~~~~~~~~~~~~~~~~~~~
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Check if Admin to Access Admin Menu
@@ -1356,7 +1359,7 @@ BEGIN
         BEGIN            
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "checkIfAdmin", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "checkIfAdmin error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
     START TRANSACTION;
@@ -1385,7 +1388,7 @@ BEGIN
         BEGIN            
             GET DIAGNOSTICS CONDITION 1
             @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-            SELECT "getActiveGames", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+            SELECT "getActiveGames error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
             ROLLBACK;
         END;
     START TRANSACTION;
@@ -1410,7 +1413,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "adminKillGame", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "adminKillGame error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     Start TRANSACTION;
@@ -1446,7 +1449,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "adminAddUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "adminAddUser error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1486,7 +1489,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "adminEditUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "adminEditUser error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1531,7 +1534,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "adminGetAllUsers", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "adminGetAllUsers error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     DECLARE exit handler for sqlwarning
@@ -1560,7 +1563,7 @@ BEGIN
         ROLLBACK;
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "adminDeleteUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "adminDeleteUser error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
     END;
     START TRANSACTION;
         IF EXISTS(SELECT * FROM tblUser WHERE `username` = pAdminUserName AND `isAdmin` = 1) THEN
@@ -1590,7 +1593,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "adminGetLockedUsers", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "adminGetLockedUsers error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1618,7 +1621,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "adminUnlockUser", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "adminUnlockUser error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1659,7 +1662,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getCharacterSkills", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getCharacterSkills error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1689,7 +1692,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getUserDetails", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getUserDetails error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1718,7 +1721,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getCharacterTile", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getCharacterTile error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1729,13 +1732,6 @@ BEGIN
 END//
 DELIMITER ;
 
-SELECT * FROM tblUser;
-SELECT * FROM tblCharacterTile;
-DELETE FROM tblCharacterTile WHERE `characterName` = 'MichaelCharacter';
-INSERT INTO tblCharacter(`characterName`, `username`, `xPosition`, `yPosition`,`characterScoreTotal`, `isActive`)
-Values 
-('Worun', 'Stephen', null, null, 0, false),
-('Derer', 'Michael', null, null, 0, false);
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Position of all game Characters
@@ -1748,7 +1744,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getAllCharactersInMap", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getAllCharactersInMap error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1770,7 +1766,7 @@ BEGIN
     BEGIN        
         GET DIAGNOSTICS CONDITION 1
         @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
-        SELECT "getAllItemsInMap", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        SELECT "getAllItemsInMap error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
         ROLLBACK;
     END;
     START TRANSACTION;
@@ -1780,3 +1776,36 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Get Chat Messages
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DELIMITER //
+DROP PROCEDURE IF EXISTS getChatMessages//
+CREATE PROCEDURE getChatMessages()
+BEGIN
+    DECLARE exit handler for sqlexception
+    BEGIN        
+        GET DIAGNOSTICS CONDITION 1
+        @P1 = MYSQL_ERRNO, @P2 = MESSAGE_TEXT;
+        SELECT "getChatMessages error", @P1 AS ERROR_NUM, @P2 AS MESSAGE;
+        ROLLBACK;
+    END;
+    START TRANSACTION;
+         SELECT `sender`, `message` FROM tblChat ORDER BY `chatID` DESC LIMIT 20;
+    COMMIT;
+END//
+DELIMITER ;
+
+
+call onlineCharacters();
+Call getChatMessages();
+Call characterChats('MarkCharacter');
+SELECT * FROM tblUser;
+SELECT * FROM tblCharacterTile;
+SELECT * FROM tblCharacterMap;
+DELETE FROM tblCharacterTile WHERE `characterName` = 'zxcvzxcv';
+INSERT INTO tblCharacter(`characterName`, `username`, `xPosition`, `yPosition`,`characterScoreTotal`, `isActive`)
+Values 
+('Worun', 'Stephen', null, null, 0, false),
+('Derer', 'Michael', null, null, 0, false);
