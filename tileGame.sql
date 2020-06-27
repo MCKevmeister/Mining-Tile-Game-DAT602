@@ -50,7 +50,7 @@ CREATE PROCEDURE makeTileGameDB()
             `xLocation` INTEGER NOT NULL,
             `yLocation` INTEGER NOT NULL,
             PRIMARY KEY (`mapName`, `xLocation`, `yLocation`),
-            FOREIGN KEY (mapName) REFERENCES tblMap (mapName) ON UPDATE CASCADE
+            FOREIGN KEY (`mapName`) REFERENCES tblMap (`mapName`) ON UPDATE CASCADE
             );
 
         CREATE TABLE tblTileItem(
@@ -93,6 +93,7 @@ CREATE PROCEDURE makeTileGameDB()
             `itemName` VARCHAR(32) NOT NULL,
             `quantity` INTEGER,
             `itemDurability` INTEGER NOT NULL,
+            PRIMARY KEY (`characterName`, `itemName`),
             FOREIGN KEY (`characterName`) REFERENCES tblCharacter (`characterName`) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY (`itemName`) REFERENCES tblItem (`itemName`) ON UPDATE CASCADE
 			);
