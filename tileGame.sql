@@ -532,9 +532,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-Select * from tblUser;
-Call editUser("simple", "Mark", "MarksPassword", "newagain");
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Delete User 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -560,7 +557,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- User Creates Character (inlcuding character skills created)
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -761,13 +757,13 @@ BEGIN
         ROLLBACK;
     END;
     START TRANSACTION;
-        SELECT `characterName`, `characterScoreTotal `
+        SELECT `characterName`, `characterScoreTotal`
         FROM tblCharacter
         WHERE (`isActive` = 1 AND `characterName` <> pCharacterName);
     COMMIT;
 END//
 DELIMITER ;
-
+Call chooseOpponent("MarkCharacter");
 DELIMITER //
 DROP PROCEDURE IF EXISTS createGame//
 CREATE PROCEDURE createGame(pCharacter1 VARCHAR(32), pCharacter2 VARCHAR(32), pMap VARCHAR(16))
