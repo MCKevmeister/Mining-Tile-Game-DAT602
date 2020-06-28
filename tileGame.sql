@@ -745,8 +745,9 @@ DELIMITER ;
 
 -- Returns a list of online characters
 -- Character is selected as opponent
+
+DROP PROCEDURE IF EXISTS chooseOpponent;
 DELIMITER //
-DROP PROCEDURE IF EXISTS chooseOpponent//
 CREATE PROCEDURE chooseOpponent(pCharacterName VARCHAR(32))
 BEGIN
     DECLARE exit handler for sqlexception
@@ -1043,7 +1044,7 @@ BEGIN
     START TRANSACTION;
     IF (EXISTS(SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName AND `mapName` = pMapName)) THEN
         IF (pDirection = "left") THEN
-            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characteame = pCharacterName)) AND 
+            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName)) AND 
                 (EXISTS (SELECT * 
                     FROM tblCharacterTile as CT
                     WHERE (
@@ -1105,7 +1106,7 @@ BEGIN
                 END; 	
             END IF;
         ELSEIF (pDirection = "up") THEN
-            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName)) AND 
+            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName)) AND 
                 (EXISTS (SELECT * 
                     FROM tblCharacterTile as CT
                     WHERE (
@@ -1116,9 +1117,12 @@ BEGIN
                     SELECT * 
                     FROM tblCharacterTile c, tblCharacterTile t
                     WHERE 
-                    (c.characterName = pCharacterName IN (SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName AND `mapName` = pMapName) AND
-                    (c.xLocation = t.xLocation AND c.yLocation - 1 = t.yLocation  AND c.isPlaying = 1 AND t.isPlaying = 1 AND
-                    c.mapName = t.mapName AND t.characterName <> c.characterName)))) THEN
+                    (c.characterName = pCharacterName AND
+                    c.xLocation = t.xLocation AND 
+                    c.yLocation - 1 = t.yLocation AND
+                    c.mapName = t.mapName AND 
+                    c.isPlaying = 1 AND t.isPlaying = 1 AND
+                    t.characterName <> c.characterName))) THEN
                 BEGIN
                     UPDATE tblCharacter
                     SET `yPosition` = `yPosition` - 1
@@ -1126,15 +1130,13 @@ BEGIN
                     UPDATE tblCharacterTile
                     SET `yLocation` = `yLocation` - 1
                     WHERE (`characterName` = pCharacterName) AND (`mapName` = pMapName);
-                    
                     SELECT CONCAT(pCharacterName, ' moved up') AS MESSAGE;
                 END; 
             ELSE
                 SELECT 'Not able to move up' AS MESSAGE;
             END IF;
         ELSEIF (pDirection = "down") THEN
-        
-            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE characterName = pCharacterName) AND 
+            IF (EXISTS (SELECT * FROM tblCharacterMap WHERE `characterName` = pCharacterName)) AND 
                 (EXISTS (SELECT * 
                     FROM tblCharacterTile as CT
                     WHERE (
@@ -1145,10 +1147,12 @@ BEGIN
                     (SELECT * 
 					FROM tblCharacterTile c, tblCharacterTile t
                     WHERE 
-                    (c.characterName = pCharacterName) AND 
-                    (c.xLocation = t.xLocation AND c.yLocation + 1 = t.yLocation) AND c.isPlaying = 1 AND t.isPlaying = 1 AND
-                    (c.mapName = t.mapName AND c.characterName <> t.characterName))))
-                THEN
+                    (c.characterName = pCharacterName AND
+                    c.xLocation = t.xLocation AND 
+                    c.yLocation + 1 = t.yLocation AND
+                    c.mapName = t.mapName AND
+                    c.isPlaying = 1 AND t.isPlaying = 1 AND
+                     t.characterName <> c.characterName))) THEN
                 BEGIN
                     UPDATE tblCharacter
                     SET `yPosition` = `yPosition` + 1
@@ -1723,8 +1727,8 @@ DELIMITER ;
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Position of all game Characters
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DROP PROCEDURE IF EXISTS getAllCharactersInMap;
 DELIMITER //
-DROP PROCEDURE IF EXISTS getAllCharactersInMap//
 CREATE PROCEDURE getAllCharactersInMap(pMap VARCHAR(16))
 BEGIN
     DECLARE exit handler for sqlexception
@@ -1741,6 +1745,8 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
+
+call getAllCharactersInMap('5 by 5');
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Position of all game Items
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
