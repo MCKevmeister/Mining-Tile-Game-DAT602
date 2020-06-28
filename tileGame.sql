@@ -516,7 +516,7 @@ BEGIN
 			BEGIN
 				SELECT CONCAT("Sorry, the user name ", pNewUserName, " has already been taken") AS Message;
 			END;
-		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail AND `email`) -- need to allow for old password to remain TODO
+		ELSEIF EXISTS (SELECT * FROM tblUser WHERE `email` = pNewUserEmail AND `email`)
         THEN
 			BEGIN
 				SELECT CONCAT("Sorry, the email ", pNewUserEmail, " is already is use") AS Message;
@@ -726,8 +726,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call onlineCharacters();
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Create Game
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -769,8 +767,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call chooseOpponent('bob');
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS createGame//
@@ -947,8 +943,6 @@ BEGIN
     COMMIT;
 END//
 
-SELECT * FROM tblCharacterTile;
-
 DELIMITER //
 DROP PROCEDURE IF EXISTS characterReturnToMap//
 CREATE PROCEDURE characterReturnToMap(pCharacterName VARCHAR(32), pMap VARCHAR(16), pDirection VARCHAR(16))
@@ -1003,8 +997,7 @@ BEGIN
                                     WHEN "Up" THEN SET lcCharacterY = lcCharacterY - 1;
                                     WHEN "Right" THEN SET lcCharacterX = lcCharacterX + 1;
                                     WHEN "Down" THEN SET lcCharacterY = lcCharacterY + 1; 
-                                    WHEN "Left" THEN SET lcCharacterX = lcCharacterX - 1; 
-                                    WHEN "";
+                                    WHEN "Left" THEN SET lcCharacterX = lcCharacterX - 1;
                                 END CASE;
                                 IF((EXISTS(SELECT *
                                     FROM tblMap
@@ -1276,6 +1269,7 @@ BEGIN
         END IF;
     COMMIT;
 END//
+DELIMITER ;
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS useItem//
@@ -1350,8 +1344,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-call characterChats('MarkCharacter', 'one');
 -- ~~~~~~~~~~~~~~~Admin~~~~~~~~~~~~~~~~~~~~~~
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Check if Admin to Access Admin Menu
@@ -1442,7 +1434,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin adds a user
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1482,7 +1473,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin edits user
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1527,7 +1517,6 @@ BEGIN
     COMMIT;   
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin deletes user
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -1585,7 +1574,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Admin unlocks locked user
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1653,8 +1641,9 @@ BEGIN
 COMMIT;
 END//
 DELIMITER ;
-
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Added procedures for milestone 3
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Character Skills
@@ -1685,7 +1674,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get User Detials
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1736,8 +1724,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Position of all game Characters
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1759,7 +1745,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Position of all game Items
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1781,7 +1766,6 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Get Chat Messages
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1801,16 +1785,3 @@ BEGIN
     COMMIT;
 END//
 DELIMITER ;
-
-
-call onlineCharacters();
-Call getChatMessages();
-Call characterChats('MarkCharacter');
-SELECT * FROM tblUser;
-SELECT * FROM tblCharacterTile;
-SELECT * FROM tblCharacterMap;
-DELETE FROM tblCharacterTile WHERE `characterName` = 'zxcvzxcv';
-INSERT INTO tblCharacter(`characterName`, `username`, `xPosition`, `yPosition`,`characterScoreTotal`, `isActive`)
-Values 
-('Worun', 'Stephen', null, null, 0, false),
-('Derer', 'Michael', null, null, 0, false);
