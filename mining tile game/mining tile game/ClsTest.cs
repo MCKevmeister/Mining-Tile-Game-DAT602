@@ -1,53 +1,44 @@
-﻿using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
+using MySql.Data.MySqlClient;
 
-namespace miningTileGame
+namespace mining_tile_game
 {
-    class ClsTest
+    internal static class ClsTest
     {
-        private const String connection = "Server=localhost;Port=3306;Database=dbTileGame;Uid =root;password=W7oUmiLaiTrznc;";
-        private static readonly MySqlConnection mySqlConnection = new MySqlConnection(connection);
-        private static string  _UserName;
-        private static string  _CharacterName;
-        private static string _MapName;
-        public static string UserName { get => _UserName; set => _UserName = value; }
-        public static string CharacterName { get => _CharacterName; set => _CharacterName = value; }
-        public static string MapName { get => _MapName; set => _MapName = value; }
+        private const string Connection = "Server=localhost;Port=3306;Database=dbTileGame;Uid =root;password=W7oUmiLaiTrznc;";
+        private static readonly MySqlConnection MySqlConnection = new MySqlConnection(Connection);
+        public static string UserName { get; set; }
+        public static string CharacterName { get; set; }
+        public static string MapName { get; set; }
         public static string testConnection()
         {
-            MySqlConnection testcon = new MySqlConnection(connection);
+            var testcon = new MySqlConnection(Connection);
             Console.Write("Validating credentials");
             
             try
             {
                 testcon.Open();
-                if (testcon.State == ConnectionState.Open)
-                { return "\nConnected to server"; }
-                else { return "\nError"; }
+                return testcon.State == ConnectionState.Open ? "\nConnected to server" : "\nError";
             }
-            catch(MySql.Data.MySqlClient.MySqlException e)
+            catch(MySqlException e)
             {
                 return e.ToString();
             }
         }
         public static DataSet registerUser(string pUsername, string pEmail, string pPassword)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            var paramEmail = new MySqlParameter("@Email", MySqlDbType.VarChar, 64);
-            var paramPassword = new MySqlParameter("@Password", MySqlDbType.VarChar, 64);
-            paramUsername.Value = pUsername;
-            paramEmail.Value = pEmail;
-            paramPassword.Value = pPassword;
-            ParamList.Add(paramUsername);
-            ParamList.Add(paramEmail);
-            ParamList.Add(paramPassword);
+            var paramList = new List<MySqlParameter>();
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = pUsername};
+            var paramEmail = new MySqlParameter("@Email", MySqlDbType.VarChar, 64) {Value = pEmail};
+            var paramPassword = new MySqlParameter("@Password", MySqlDbType.VarChar, 64) {Value = pPassword};
+            paramList.Add(paramUsername);
+            paramList.Add(paramEmail);
+            paramList.Add(paramPassword);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL registerUser(@Username, @Email, @Password)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL registerUser(@Username, @Email, @Password)", paramList.ToArray());
                 return aDataSet;
             }
             catch (MySqlException e)
@@ -58,43 +49,36 @@ namespace miningTileGame
         }
         public static DataSet userLogin(string pUsername, string pPassword)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            var paramUserPassword = new MySqlParameter("@UserPassword", MySqlDbType.VarChar, 64);
-            paramUsername.Value = pUsername;
-            paramUserPassword.Value = pPassword;
-            ParamList.Add(paramUsername);
-            ParamList.Add(paramUserPassword);
-            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "Call userLogin(@Username, @UserPassword)", ParamList.ToArray());
+            var paramList = new List<MySqlParameter>();
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = pUsername};
+            var paramUserPassword = new MySqlParameter("@UserPassword", MySqlDbType.VarChar, 64) {Value = pPassword};
+            paramList.Add(paramUsername);
+            paramList.Add(paramUserPassword);
+            var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "Call userLogin(@Username, @UserPassword)", paramList.ToArray());
             return aDataSet;
         }
         public static DataSet userLogoff()
         { 
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            paramUsername.Value = UserName;
-            ParamList.Add(paramUsername);
-            var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "Call userLogoff(@Username)", ParamList.ToArray());
+            var paramList = new List<MySqlParameter>();
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramUsername);
+            var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "Call userLogoff(@Username)", paramList.ToArray());
             return aDataSet;
         }
         public static DataSet editUser(string pNewUserName, string pNewUserPassword, string pNewUserEmail)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32);
-            var paramNewUsername = new MySqlParameter("@NewUsername", MySqlDbType.VarChar, 32);
-            var paramNewUserPassword = new MySqlParameter("@NewUserPassword", MySqlDbType.VarChar, 64);
-            var paramNewUserEmail = new MySqlParameter("@NewUserEmail", MySqlDbType.VarChar, 64);
-            paramUserName.Value = UserName;
-            paramNewUsername.Value = pNewUserName;
-            paramNewUserPassword.Value = pNewUserPassword;
-            paramNewUserEmail.Value = pNewUserEmail;
-            ParamList.Add(paramUserName);
-            ParamList.Add(paramNewUsername);
-            ParamList.Add(paramNewUserPassword);
-            ParamList.Add(paramNewUserEmail);
+            var paramList = new List<MySqlParameter>();
+            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32) {Value = UserName};
+            var paramNewUsername = new MySqlParameter("@NewUsername", MySqlDbType.VarChar, 32) {Value = pNewUserName};
+            var paramNewUserPassword = new MySqlParameter("@NewUserPassword", MySqlDbType.VarChar, 64) {Value = pNewUserPassword};
+            var paramNewUserEmail = new MySqlParameter("@NewUserEmail", MySqlDbType.VarChar, 64) {Value = pNewUserEmail};
+            paramList.Add(paramUserName);
+            paramList.Add(paramNewUsername);
+            paramList.Add(paramNewUserPassword);
+            paramList.Add(paramNewUserEmail);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL editUser(@Username, @NewUsername, @NewUserPassword, @NewUserEmail)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL editUser(@Username, @NewUsername, @NewUserPassword, @NewUserEmail)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -104,13 +88,13 @@ namespace miningTileGame
         }
         public static DataSet deleteUser()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            paramUsername.Value = UserName; //Accesses the stored username from the userMenu
-            ParamList.Add(paramUsername);
+            var paramList = new List<MySqlParameter>();
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = UserName};
+            //Accesses the stored username from the userMenu
+            paramList.Add(paramUsername);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL deleteUser(@Username)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL deleteUser(@Username)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -120,28 +104,22 @@ namespace miningTileGame
         }
         public static DataSet createCharacter(string pCharacterName, string pskill1, string pskill2, string pskill3, string pskill4)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32);
-            var paramCharacterName = new MySqlParameter("@CharacterName", MySqlDbType.VarChar, 32);
-            var paramSkill1 = new MySqlParameter("@Skill1", MySqlDbType.VarChar, 20);
-            var paramSkill2 = new MySqlParameter("@Skill2", MySqlDbType.VarChar, 20);
-            var paramSkill3 = new MySqlParameter("@Skill3", MySqlDbType.VarChar, 20);
-            var paramSkill4 = new MySqlParameter("@Skill4", MySqlDbType.VarChar, 20);
-            paramUserName.Value = UserName;
-            paramCharacterName.Value = pCharacterName;
-            paramSkill1.Value = pskill1;
-            paramSkill2.Value = pskill2;
-            paramSkill3.Value = pskill3;
-            paramSkill4.Value = pskill4;
-            ParamList.Add(paramUserName);
-            ParamList.Add(paramCharacterName);
-            ParamList.Add(paramSkill1);
-            ParamList.Add(paramSkill2);
-            ParamList.Add(paramSkill3);
-            ParamList.Add(paramSkill4);
+            var paramList = new List<MySqlParameter>();
+            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32) {Value = UserName};
+            var paramCharacterName = new MySqlParameter("@CharacterName", MySqlDbType.VarChar, 32) {Value = pCharacterName};
+            var paramSkill1 = new MySqlParameter("@Skill1", MySqlDbType.VarChar, 20) {Value = pskill1};
+            var paramSkill2 = new MySqlParameter("@Skill2", MySqlDbType.VarChar, 20){Value = pskill2};
+            var paramSkill3 = new MySqlParameter("@Skill3", MySqlDbType.VarChar, 20){Value = pskill3};
+            var paramSkill4 = new MySqlParameter("@Skill4", MySqlDbType.VarChar, 20){Value = pskill4};
+            paramList.Add(paramUserName);
+            paramList.Add(paramCharacterName);
+            paramList.Add(paramSkill1);
+            paramList.Add(paramSkill2);
+            paramList.Add(paramSkill3);
+            paramList.Add(paramSkill4);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL createCharacter(@Username, @CharacterName, @Skill1, @Skill2, @Skill3, @Skill4)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL createCharacter(@Username, @CharacterName, @Skill1, @Skill2, @Skill3, @Skill4)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -151,13 +129,12 @@ namespace miningTileGame
         }
         public static DataSet getAllUserCharacters()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32);
-            paramUserName.Value = UserName.ToString();
-            ParamList.Add(paramUserName);
+            var paramList = new List<MySqlParameter>();
+            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramUserName);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getAllUserCharacters(@Username)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL getAllUserCharacters(@Username)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -167,16 +144,14 @@ namespace miningTileGame
         }
         public static DataSet deleteCharacter(string pCharacterName)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacterName = new MySqlParameter("@CharacterName", MySqlDbType.VarChar, 32);
-            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32);
-            paramUserName.Value = UserName;
-            paramCharacterName.Value = pCharacterName;
-            ParamList.Add(paramUserName);
-            ParamList.Add(paramCharacterName);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacterName = new MySqlParameter("@CharacterName", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramUserName);
+            paramList.Add(paramCharacterName);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL deleteCharacter(@CharacterName, @UserName)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL deleteCharacter(@CharacterName, @UserName)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -186,16 +161,14 @@ namespace miningTileGame
         }
         public static DataSet selectCharacter(string pCharacterName)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacterName = new MySqlParameter("@CharacterName", MySqlDbType.VarChar, 32);
-            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32);
-            paramUserName.Value = UserName;
-            paramCharacterName.Value = pCharacterName;
-            ParamList.Add(paramCharacterName);
-            ParamList.Add(paramUserName);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacterName = new MySqlParameter("@CharacterName", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramCharacterName);
+            paramList.Add(paramUserName);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL selectCharacter(@CharacterName, @UserName)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL selectCharacter(@CharacterName, @UserName)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -205,16 +178,14 @@ namespace miningTileGame
         }
         public static DataSet changeCharacter()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacterName = new MySqlParameter("@CharacterName", MySqlDbType.VarChar, 32);
-            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32);
-            paramUserName.Value = UserName;
-            paramCharacterName.Value = CharacterName;
-            ParamList.Add(paramCharacterName);
-            ParamList.Add(paramUserName);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacterName = new MySqlParameter("@CharacterName", MySqlDbType.VarChar, 32) {Value = CharacterName} ;
+            var paramUserName = new MySqlParameter("@UserName", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramCharacterName);
+            paramList.Add(paramUserName);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL changeCharacter(@CharacterName, @UserName)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL changeCharacter(@CharacterName, @UserName)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -226,7 +197,7 @@ namespace miningTileGame
         {
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL onlineCharacters()");
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL onlineCharacters()");
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -238,7 +209,7 @@ namespace miningTileGame
         {
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getMaps()");
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL getMaps()");
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -248,13 +219,12 @@ namespace miningTileGame
         }
         public static DataSet chooseOpponent()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacterName = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            paramCharacterName.Value = CharacterName;
-            ParamList.Add(paramCharacterName);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacterName = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            paramList.Add(paramCharacterName);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL chooseOpponent(@Character)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL chooseOpponent(@Character)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -264,21 +234,18 @@ namespace miningTileGame
         }
         public static DataSet createGame(string pOpponent, string pMap)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter1 = new MySqlParameter("@Character1", MySqlDbType.VarChar, 32);
-            var paramCharacter2 = new MySqlParameter("@Character2", MySqlDbType.VarChar, 32);
-            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
-            paramCharacter1.Value = CharacterName;
-            paramCharacter2.Value = pOpponent;
-            paramMap.Value = pMap;
-            ParamList.Add(paramCharacter1);
-            ParamList.Add(paramCharacter2);
-            ParamList.Add(paramMap);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter1 = new MySqlParameter("@Character1", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramCharacter2 = new MySqlParameter("@Character2", MySqlDbType.VarChar, 32) {Value = pOpponent};
+            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16) {Value = pMap};
+            paramList.Add(paramCharacter1);
+            paramList.Add(paramCharacter2);
+            paramList.Add(paramMap);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL createGame(@Character1, @Character2, @Map)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL createGame(@Character1, @Character2, @Map)", paramList.ToArray());
                 return aDataSet;
-             }
+            }
             catch (ArgumentException)
             {
                 return null;
@@ -286,13 +253,12 @@ namespace miningTileGame
         }
         public static DataSet getCharactersMaps()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            paramCharacter.Value = CharacterName;
-            ParamList.Add(paramCharacter);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            paramList.Add(paramCharacter);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getCharactersMaps(@Character)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL getCharactersMaps(@Character)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -302,16 +268,14 @@ namespace miningTileGame
         }
         public static DataSet leaveCharacterMap()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
-            paramCharacter.Value = CharacterName;
-            paramMap.Value = MapName;
-            ParamList.Add(paramCharacter);
-            ParamList.Add(paramMap);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16) {Value = MapName};
+            paramList.Add(paramCharacter);
+            paramList.Add(paramMap);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL leaveCharacterMap(@Character, @Map)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL leaveCharacterMap(@Character, @Map)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -321,16 +285,16 @@ namespace miningTileGame
         }
         public static DataSet endCharacterGame(string pMap)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
+            List<MySqlParameter> paramList = new List<MySqlParameter>();
             var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
             var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
             paramCharacter.Value = CharacterName;
             paramMap.Value = pMap;
-            ParamList.Add(paramCharacter);
-            ParamList.Add(paramMap);
+            paramList.Add(paramCharacter);
+            paramList.Add(paramMap);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL endCharacterGame(@Character, @Map)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL endCharacterGame(@Character, @Map)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -340,13 +304,12 @@ namespace miningTileGame
         }
         public static DataSet getMapsCharacterCanRejoin()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            paramCharacter.Value = CharacterName;
-            ParamList.Add(paramCharacter);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            paramList.Add(paramCharacter);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getMapsCharacterCanRejoin(@Character)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL getMapsCharacterCanRejoin(@Character)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -356,19 +319,16 @@ namespace miningTileGame
         }
         public static DataSet characterReturnToMap(string pMap, string pDirection)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
-            var paramDirection = new MySqlParameter("@Direction", MySqlDbType.VarChar, 16);
-            paramCharacter.Value = CharacterName;
-            paramMap.Value = pMap;
-            paramDirection.Value = pDirection;
-            ParamList.Add(paramCharacter);
-            ParamList.Add(paramMap);
-            ParamList.Add(paramDirection);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16) {Value = pMap};
+            var paramDirection = new MySqlParameter("@Direction", MySqlDbType.VarChar, 16) {Value = pDirection};
+            paramList.Add(paramCharacter);
+            paramList.Add(paramMap);
+            paramList.Add(paramDirection);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL characterReturnToMap(@Character, @Map, @Direction)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL characterReturnToMap(@Character, @Map, @Direction)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -378,19 +338,16 @@ namespace miningTileGame
         }
         public static DataSet characterMakesMove(string pDirection)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            var paramDirection = new MySqlParameter("@Direction", MySqlDbType.VarChar, 5);
-            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
-            paramCharacter.Value = CharacterName;
-            paramDirection.Value = pDirection;
-            paramMap.Value = MapName;
-            ParamList.Add(paramCharacter);
-            ParamList.Add(paramDirection);
-            ParamList.Add(paramMap);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramDirection = new MySqlParameter("@Direction", MySqlDbType.VarChar, 5) {Value = pDirection};
+            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16) {Value = MapName};
+            paramList.Add(paramCharacter);
+            paramList.Add(paramDirection);
+            paramList.Add(paramMap);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL characterMakesMove(@Character, @Direction, @Map)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL characterMakesMove(@Character, @Direction, @Map)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -400,16 +357,14 @@ namespace miningTileGame
         }
         public static DataSet characterPicksUpItem()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
-            paramCharacter.Value = CharacterName;
-            paramMap.Value = MapName;
-            ParamList.Add(paramCharacter);
-            ParamList.Add(paramMap);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16) {Value = MapName};
+            paramList.Add(paramCharacter);
+            paramList.Add(paramMap);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL characterPicksUpItem(@Character, @Map)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL characterPicksUpItem(@Character, @Map)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -419,13 +374,12 @@ namespace miningTileGame
         }
         public static DataSet getCharacterItems(string pDirection)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            paramCharacter.Value = CharacterName;
-            ParamList.Add(paramCharacter);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            paramList.Add(paramCharacter);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getCharacterItems(@Character, @Direction, @Map)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL getCharacterItems(@Character, @Direction, @Map)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -435,22 +389,18 @@ namespace miningTileGame
         }
         public static DataSet useItem(string pItem, string pMap)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            var paramItemName = new MySqlParameter("@ItemName", MySqlDbType.VarChar, 32);
-            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
-            paramCharacter.Value = CharacterName;
-            paramUsername.Value = UserName;
-            paramItemName.Value = pItem;
-            paramMap.Value = pMap;
-            ParamList.Add(paramCharacter);
-            ParamList.Add(paramUsername);
-            ParamList.Add(paramItemName);
-            ParamList.Add(paramMap);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = UserName};
+            var paramItemName = new MySqlParameter("@ItemName", MySqlDbType.VarChar, 32) {Value = pItem};
+            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16) {Value = pMap};
+            paramList.Add(paramCharacter);
+            paramList.Add(paramUsername);
+            paramList.Add(paramItemName);
+            paramList.Add(paramMap);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL useItem(@Character, @Username, @ItemName, @Map)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL useItem(@Character, @Username, @ItemName, @Map)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -460,16 +410,14 @@ namespace miningTileGame
         }
         public static DataSet characterChats(string pMessage)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32);
-            var paramMessage = new MySqlParameter("@Message", MySqlDbType.VarChar, 32);
-            paramCharacter.Value = CharacterName;
-            paramMessage.Value = pMessage;
-            ParamList.Add(paramCharacter);
-            ParamList.Add(paramMessage);
+            var paramList = new List<MySqlParameter>();
+            var paramCharacter = new MySqlParameter("@Character", MySqlDbType.VarChar, 32) {Value = CharacterName};
+            var paramMessage = new MySqlParameter("@Message", MySqlDbType.VarChar, 32) {Value = pMessage};
+            paramList.Add(paramCharacter);
+            paramList.Add(paramMessage);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL characterChats(@Character, @Message)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL characterChats(@Character, @Message)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -479,13 +427,12 @@ namespace miningTileGame
         }
         public static DataSet checkIfAdmin()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            paramUsername.Value = UserName;
-            ParamList.Add(paramUsername);
+            var paramList = new List<MySqlParameter>();
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramUsername);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL checkIfAdmin(@Username)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL checkIfAdmin(@Username)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -495,13 +442,12 @@ namespace miningTileGame
         }
         public static DataSet getActiveGames()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            paramUsername.Value = UserName;
-            ParamList.Add(paramUsername);
+            var paramList = new List<MySqlParameter>();
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramUsername);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL getActiveGames(@Username)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL getActiveGames(@Username)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -511,16 +457,14 @@ namespace miningTileGame
         }
         public static DataSet adminKillGame(string pMap)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16);
-            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
-            paramMap.Value = pMap;
-            paramAdminUsername.Value = UserName;
-            ParamList.Add(paramMap);
-            ParamList.Add(paramAdminUsername);
+            var paramList = new List<MySqlParameter>();
+            var paramMap = new MySqlParameter("@Map", MySqlDbType.VarChar, 16) {Value = pMap};
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramMap);
+            paramList.Add(paramAdminUsername);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminKillGame(@Map, @AdminUsername)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL adminKillGame(@Map, @AdminUsername)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -530,27 +474,22 @@ namespace miningTileGame
         }
         public static DataSet adminAddUser(string pUsername, string pEmail, string pPassword, Boolean pIsAdmin)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            var paramEmail = new MySqlParameter("@Email", MySqlDbType.VarChar, 64);
-            var paramPassword = new MySqlParameter("@Password", MySqlDbType.VarChar, 64);
-            var paramIsAdmin = new MySqlParameter("@IsAdmin", MySqlDbType.Int16); // mysql connection has issues with numbers that arn't integers
-            paramAdminUsername.Value = UserName;
-            paramUsername.Value = pUsername;
-            paramEmail.Value = pEmail;
-            paramPassword.Value = pPassword;
-            paramIsAdmin.Value = pIsAdmin;
-            ParamList.Add(paramAdminUsername);
-            ParamList.Add(paramUsername);
-            ParamList.Add(paramEmail);
-            ParamList.Add(paramPassword);
-            ParamList.Add(paramIsAdmin);
+            var paramList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32) {Value = UserName};
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = pUsername};
+            var paramEmail = new MySqlParameter("@Email", MySqlDbType.VarChar, 64) {Value = pEmail};
+            var paramPassword = new MySqlParameter("@Password", MySqlDbType.VarChar, 64) {Value = pPassword};
+            var paramIsAdmin = new MySqlParameter("@IsAdmin", MySqlDbType.Int16) {Value = pIsAdmin}; // mysql connection has issues with numbers that aren't integers
+            paramList.Add(paramAdminUsername);
+            paramList.Add(paramUsername);
+            paramList.Add(paramEmail);
+            paramList.Add(paramPassword);
+            paramList.Add(paramIsAdmin);
             try
             {
                 // (pAdminUserName VARCHAR(32), pCurrentUserName VARCHAR(32), pNewUserName VARCHAR(32), pEmail VARCHAR(64), pUserPassword VARCHAR(64), pIsAdmin BIT)
 
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminAddUser(@AdminUsername, @Username, @Email, @Password, @IsAdmin)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL adminAddUser(@AdminUsername, @Username, @Email, @Password, @IsAdmin)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -560,37 +499,28 @@ namespace miningTileGame
         }
         public static DataSet adminEditUser(string pUsername, string pNewUserName, string pNewUserEmail, string pNewUserPassword, int pNewLoginAttempts, int pNewUserScore, int pNewIsLocked, int pIsAdmin)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
-            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            var paramNewUsername = new MySqlParameter("@NewUsername", MySqlDbType.VarChar, 32);
-            var paramNewUserPassword = new MySqlParameter("@NewUserPassword", MySqlDbType.VarChar, 64);
-            var paramNewUserEmail = new MySqlParameter("@NewUserEmail", MySqlDbType.VarChar, 64);
-            var paramNewLoginAttempts = new MySqlParameter("@NewLoginAttempts", MySqlDbType.Int16);
-            var paramNewUserScore = new MySqlParameter("@NewUserScore", MySqlDbType.Int16);
-            var paramNewIsLocked = new MySqlParameter("@NewIsLocked", MySqlDbType.Bit);
-            var paramIsAdmin = new MySqlParameter("@IsAdmin", MySqlDbType.Bit);
-            paramAdminUsername.Value = UserName;
-            paramUsername.Value = pUsername;
-            paramNewUsername.Value = pNewUserName;
-            paramNewUserPassword.Value = pNewUserPassword;
-            paramNewUserEmail.Value = pNewUserEmail;
-            paramNewLoginAttempts.Value = pNewLoginAttempts;
-            paramNewIsLocked.Value = pNewIsLocked;
-            paramNewUserScore.Value = pNewUserScore;
-            paramIsAdmin.Value = pIsAdmin;
-            ParamList.Add(paramAdminUsername);
-            ParamList.Add(paramUsername);
-            ParamList.Add(paramNewUsername);
-            ParamList.Add(paramNewUserPassword);
-            ParamList.Add(paramNewUserEmail);
-            ParamList.Add(paramNewLoginAttempts);
-            ParamList.Add(paramNewUserScore);
-            ParamList.Add(paramNewIsLocked);
-            ParamList.Add(paramIsAdmin);
+            var paramList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32) {Value = UserName};
+            var paramUsername = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = pUsername};
+            var paramNewUsername = new MySqlParameter("@NewUsername", MySqlDbType.VarChar, 32) {Value = pNewUserName};
+            var paramNewUserPassword = new MySqlParameter("@NewUserPassword", MySqlDbType.VarChar, 64) {Value = pNewUserPassword};
+            var paramNewUserEmail = new MySqlParameter("@NewUserEmail", MySqlDbType.VarChar, 64) {Value = pNewUserEmail};
+            var paramNewLoginAttempts = new MySqlParameter("@NewLoginAttempts", MySqlDbType.Int16) {Value = pNewLoginAttempts};
+            var paramNewUserScore = new MySqlParameter("@NewUserScore", MySqlDbType.Int16) {Value = pNewUserScore};
+            var paramNewIsLocked = new MySqlParameter("@NewIsLocked", MySqlDbType.Bit) {Value = pNewIsLocked};
+            var paramIsAdmin = new MySqlParameter("@IsAdmin", MySqlDbType.Bit) {Value = pIsAdmin};
+            paramList.Add(paramAdminUsername);
+            paramList.Add(paramUsername);
+            paramList.Add(paramNewUsername);
+            paramList.Add(paramNewUserPassword);
+            paramList.Add(paramNewUserEmail);
+            paramList.Add(paramNewLoginAttempts);
+            paramList.Add(paramNewUserScore);
+            paramList.Add(paramNewIsLocked);
+            paramList.Add(paramIsAdmin);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminEditUser(@AdminUsername, @Username, @NewUsername, @NewUserEmail, @NewUserPassword, @NewLoginAttempts, @NewUserScore, @NewIsLocked, @IsAdmin)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL adminEditUser(@AdminUsername, @Username, @NewUsername, @NewUserEmail, @NewUserPassword, @NewLoginAttempts, @NewUserScore, @NewIsLocked, @IsAdmin)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -600,13 +530,12 @@ namespace miningTileGame
         }
         public static DataSet adminGetAllUsers()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
-            paramAdminUsername.Value = UserName;
-            ParamList.Add(paramAdminUsername);
+            var paramList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramAdminUsername);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminGetAllUsers(@AdminUsername)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL adminGetAllUsers(@AdminUsername)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -616,16 +545,14 @@ namespace miningTileGame
         }
         public static DataSet adminDeleteUser(string pUsername)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
-            var paramDeleteUser = new MySqlParameter("@DeleteUser", MySqlDbType.VarChar, 32);
-            paramAdminUsername.Value = UserName;
-            paramDeleteUser.Value = pUsername;
-            ParamList.Add(paramAdminUsername);
-            ParamList.Add(paramDeleteUser);
+            var paramList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32) {Value = UserName};
+            var paramDeleteUser = new MySqlParameter("@DeleteUser", MySqlDbType.VarChar, 32) {Value = pUsername};
+            paramList.Add(paramAdminUsername);
+            paramList.Add(paramDeleteUser);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminDeleteUser(@DeleteUser, @AdminUsername)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL adminDeleteUser(@DeleteUser, @AdminUsername)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -635,13 +562,12 @@ namespace miningTileGame
         }
         public static DataSet adminGetLockedUsers()
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
-            paramAdminUsername.Value = UserName;
-            ParamList.Add(paramAdminUsername);
+            var paramList = new List<MySqlParameter>();
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramAdminUsername);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminGetLockedUsers(@AdminUsername)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL adminGetLockedUsers(@AdminUsername)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
@@ -651,16 +577,14 @@ namespace miningTileGame
         }
         public static DataSet adminUnlockUser(string pUsername)
         {
-            List<MySqlParameter> ParamList = new List<MySqlParameter>();
-            var paramUnlockUser = new MySqlParameter("@Username", MySqlDbType.VarChar, 32);
-            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32);
-            paramUnlockUser.Value = pUsername;
-            paramAdminUsername.Value = UserName;
-            ParamList.Add(paramUnlockUser);
-            ParamList.Add(paramAdminUsername);
+            var paramList = new List<MySqlParameter>();
+            var paramUnlockUser = new MySqlParameter("@Username", MySqlDbType.VarChar, 32) {Value = pUsername};
+            var paramAdminUsername = new MySqlParameter("@AdminUsername", MySqlDbType.VarChar, 32) {Value = UserName};
+            paramList.Add(paramUnlockUser);
+            paramList.Add(paramAdminUsername);
             try
             {
-                var aDataSet = MySqlHelper.ExecuteDataset(mySqlConnection, "CALL adminUnlockUser(@Username, @AdminUsername)", ParamList.ToArray());
+                var aDataSet = MySqlHelper.ExecuteDataset(MySqlConnection, "CALL adminUnlockUser(@Username, @AdminUsername)", paramList.ToArray());
                 return aDataSet;
             }
             catch (ArgumentException)
